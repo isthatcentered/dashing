@@ -4,7 +4,9 @@
     "description": "Model Factories just like in Laravel",
     "main": "index.js",
     "scripts": {
-        "test": "jest --watchAll"
+        "test": "jest --watchAll",
+        "start": "parcel src/index.ts & yarn test",
+        "build": "parcel build src/index.ts"
     },
     "babel": {
         "presets": [
