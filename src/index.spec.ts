@@ -3,7 +3,7 @@ import { merge } from "lodash"
 
 
 
-interface UnknownObject
+export interface UnknownObject
 {
 	[ name: string ]: any
 }
@@ -22,7 +22,7 @@ class User
 	}
 }
 
-type Fakery = ( faker: any ) => any
+export type Fakery = ( faker: any ) => any | Array<any>
 
 class MoBjects
 {
@@ -163,7 +163,7 @@ describe( `mobjects`, () => {
 			
 			defineFactory( mobjects, User, _ => [ firstParam, secondParam ] )
 			
-			let user: User = mobjects.make( User )
+			let user: User = mobjects.make( User ) as User
 			
 			expect( user.param1 ).toBe( firstParam )
 			expect( user.param2 ).toBe( secondParam )
@@ -250,7 +250,7 @@ describe( `mobjects`, () => {
 			expect( instantiated.param1[ "shouldStillBeThereAfterOverride" ] ).toBe( defaults[ 0 ].shouldStillBeThereAfterOverride )
 		} )
 	} )
-
+	
 	// works with faker
 } )
 
