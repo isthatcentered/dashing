@@ -1,0 +1,48 @@
+{
+    "name": "mobjects",
+    "version": "1.0.0",
+    "description": "Model Factories just like in Laravel",
+    "main": "index.js",
+    "scripts": {
+        "test": "jest --watchAll"
+    },
+    "babel": {
+        "presets": [
+            [
+                "env",
+                "preact"
+            ]
+        ],
+        "plugins": [
+            [
+                "transform-object-rest-spread"
+            ]
+        ]
+    },
+    "jest": {
+        "transform": {
+            "^.+\\.tsx?$": "ts-jest"
+        },
+        "testEnvironment": "node",
+        "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+        "moduleFileExtensions": [
+            "ts",
+            "tsx",
+            "js",
+            "jsx",
+            "json",
+            "node"
+        ]
+    },
+    "author": "Edouard Penin <e.peninb@gmail.com>",
+    "license": "ISC",
+    "devDependencies": {
+        "@types/jest": "^23.3.1",
+        "babel-plugin-transform-object-rest-spread": "^6.26.0",
+        "babel-preset-env": "^1.7.0",
+        "jest": "^23.4.2",
+        "parcel-bundler": "^1.9.7",
+        "ts-jest": "^23.1.2",
+        "typescript": "^3.0.1"
+    }
+}
