@@ -1,5 +1,5 @@
-import { MoBjectsSeed, Seed } from "./MoBjectsSeed"
 import { merge } from "lodash"
+import { Seed } from "./Seed/Seed"
 import Mock = jest.Mock
 
 
@@ -116,7 +116,7 @@ describe( `Factory`, () => {
 
 
 
-function makeFactory( use: Function, seed: Seed = new MoBjectsSeed( {}, [] ) )
+function makeFactory( use: Function, seed: Seed = { generate: () => [] } )
 {
 	return new Factory( use, seed )
 }
