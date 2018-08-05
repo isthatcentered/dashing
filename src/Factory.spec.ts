@@ -1,42 +1,13 @@
-import { Fakery } from "./index.spec"
+import { MoBjectsSeed, Seed } from "./MoBjectsSeed"
+import { merge } from "lodash"
+import Mock = jest.Mock
 
 
 
 
-class Seed
-{
-	
-	private __seed: Fakery
-	
-	
-	constructor( faker: any, seed: Fakery )
-	{
-		if ( !Seed.isValid( seed ) )
-			throw new Error( `Seed must either be Array or Function returning Array.` )
-		
-		this.__seed = seed
-	}
-	
-	
-	static isValid( seed: Fakery ): boolean
-	{
-		if ( typeof seed !== "function" && !Array.isArray( seed ) )
-			return false
-		
-		if ( typeof seed === "function" && !Array.isArray( seed() ) )
-			return false
-		
-		return true
-	}
-	
-	
-	generate(): Array<any>
-	{
-		return Array.isArray( this.__seed ) ?
-		       [ ...this.__seed ] :
-		       this.__seed()
-	}
-}
+jest.mock( "lodash", () => ({ merge: jest.fn() }) )
+
+export type mobjectsDataGenerator = any
 
 export class Factory
 {
@@ -57,12 +28,14 @@ export class Factory
 	
 	make( overrides: Array<any> = [] )
 	{
-		return new (this.__ref as any)( ...this.__seed.generate() )
+		const args = merge( this.__seed.generate(), overrides )
+		
+		return new (this.__ref as any)( ...args )
 	}
 }
 
 
-class RandomClassForTests
+class SomeClass
 {
 	
 	constructor( public param1: any, public param2: any, public param3: any )
@@ -72,6 +45,10 @@ class RandomClassForTests
 
 
 describe( `Factory`, () => {
+	
+	beforeEach( () => {
+		(merge as Mock).mockReset()
+	} )
 	
 	describe( `Creating a factory `, () => {
 		
@@ -83,107 +60,69 @@ describe( `Factory`, () => {
 				expect( () => makeFactory( invalid as any ) ).toThrow() )
 		} )
 		
+		describe( `Providing defaults`, () =>
+			it( `Should instantiate new class with seed result`, () => {
+				
+				const fakeSeedResult  = "I am the result of seed.generate()",
+				      fakeMergeResult = "I am the result of merge",
+				      fakeClassRef    = jest.fn(),
+				      seed            = makeSpySeed( fakeSeedResult );
+				
+				(merge as Mock).mockReturnValue( fakeMergeResult )
+				
+				const created: SomeClass = makeFactory( fakeClassRef, seed as any ).make()
+				
+				const firstMergeCallArgument = (merge as Mock).mock.calls[ 0 ][ 0 ]
+				
+				expect( seed.generate ).toHaveBeenCalled()
+				expect( firstMergeCallArgument ).toEqual( fakeSeedResult )
+				expect( fakeClassRef ).toHaveBeenCalledWith( fakeMergeResult )
+			} ) )
+		
 		describe( `make()`, () => {
 			
 			it( `Should create an actual instance of the desired object`, () => {
 				
-				let created = makeFactory( RandomClassForTests )
+				let created = makeFactory( SomeClass )
 					.make()
 				
-				expect( created ).toBeInstanceOf( RandomClassForTests )
+				expect( created ).toBeInstanceOf( SomeClass )
 			} )
 			
-			describe( `Providing defaults`, () =>
-				it( `Should instantiate new class with seed result`, () => {
+			describe( `Overriding defaults`, () =>
+				it( `Should instantiate new class with result of _.merge of [defaults, overrides]`, () => {
 					
-					let seed           = makeSeed(),
-					    fakeClassRef   = jest.fn(),
-					    fakeSeedResult = "batman"
+					let defaults    = [ "batman", "robin" ],
+					    overrides   = [ "waffles", "pancakes" ],
+					    mergeResult = "I am the result of calling lodash's merge",
+					    fakeClass   = jest.fn();
 					
-					seed.generate = () => [ fakeSeedResult ]
+					(merge as Mock).mockReturnValue( mergeResult )
 					
-					const created: RandomClassForTests = makeFactory(
-						fakeClassRef,
-						seed,
-					).make()
+					let factory             = makeFactory( fakeClass, makeSpySeed( defaults ) ),
+					    instance: SomeClass = factory.make( overrides )
 					
-					expect( fakeClassRef ).toHaveBeenCalledWith( fakeSeedResult )
+					expect( merge ).toHaveBeenCalledWith( defaults, overrides )
+					
+					expect( fakeClass ).toHaveBeenCalledWith( mergeResult )
 				} ) )
 		} )
-		
-		describe( `Overriding defaults`, () => {
-		
-		} )
 	} )
 	
-	
-	
-	describe( `Multiple default states`, () => {
+	describe( `Creating a factory state`, () => {
 	
 	} )
 } )
 
 
-describe( `Seed`, () => {
-	
-	describe( `Creating a seed`, () => {
-		
-		it( `Should throw if seed neither array nore function`, () => {
-			
-			const invalids = [ "string", 0, {} ]
-			
-			invalids.forEach( ( invalid: any ) =>
-				expect( () => makeSeed( invalid ) ).toThrow() )
-		} )
-		
-		it( `Should throw if seed is function but doesn't return array`, () => {
-			expect( () => makeSeed( () => ({}) ) ).toThrow()
-		} )
-	} )
-	
-	describe( `Generate()`, () => {
-		
-		describe( `Seed as array`, () => {
-			
-			it( `Should return passed array`, () => {
-				
-				let params = [ "hello", "world" ]
-				
-				// immutability check
-				expect( makeSeed( params ).generate() ).not.toBe( params )
-				
-				expect( makeSeed( params ).generate() ).toEqual( params )
-			} )
-		} )
-		
-		describe( `Seed as function`, () => {
-			
-			it( `Should return result of function`, () => {
-				
-				let param = () => [ "hello", "world" ]
-				
-				expect( makeSeed( param ).generate() ).toEqual( param() )
-			} )
-		} )
-		
-		
-		describe( `Generating data automatically`, () => {
-			
-			makeSeed( faker => {
-				return [ faker.randomNumber() ]
-			} )
-		} )
-	} )
-} )
 
-
-function makeSeed( params: Fakery = [] ): Seed
+function makeFactory( use: Function, seed: Seed = new MoBjectsSeed( {}, [] ) )
 {
-	return new Seed( {}, params )
+	return new Factory( use, seed )
 }
 
 
-function makeFactory( use: Function, seed: Seed = makeSeed() )
+function makeSpySeed( generateResult?: any ): Seed
 {
-	return new Factory( use, seed )
+	return { generate: jest.fn().mockReturnValue( generateResult ) } as Seed
 }
