@@ -32,6 +32,16 @@ export class Factory
 		
 		return new (this.__ref as any)( ...args )
 	}
+	
+	
+	registerState( state: string, seed: Seed )
+	{
+		if ( !state )
+			throw new Error( "State name required" )
+		
+		if ( seed === undefined )
+			throw new Error( "Seed required" )
+	}
 }
 
 
@@ -110,15 +120,69 @@ describe( `Factory`, () => {
 	} )
 	
 	describe( `Creating a factory state`, () => {
-	
+		
+		describe( `Registering a state`, () => {
+			
+			it( `Should throw if no name`, () => {
+				
+				let factory = makeFactory( SomeClass )
+				
+				expect( () => factory.registerState( "", undefined as any ) ).toThrow( "State name required" )
+			} )
+			
+			it( `Should throw if undefined seed`, () => {
+				
+				let factory = makeFactory( SomeClass )
+				
+				expect( () => factory.registerState( "state name", undefined as any ) ).toThrow( "Seed required" )
+			} )
+			
+			it( `Should register step when all params passed`, () => {
+				
+				let factory = makeFactory( SomeClass )
+				
+				factory.registerState( "State name", makeSeed( [ "some specific param for this state" ] ) )
+			} )
+		} )
+		
+		describe( `Getting a registered state`, () => {
+			
+			it( `Should apply state parameters on top of defaults`, () => {
+				
+				let stateConfig = [ "some specific param for this state" ]
+				
+				let factory = makeFactory( SomeClass )
+				
+				factory.registerState( "active", makeSeed( stateConfig ) )
+				
+				const created: SomeClass = factory
+					.applyState( "active" )
+					.make()
+				
+				expect( created.param1 ).toBe( stateConfig[ 0 ] )
+				// should reset state after a make (create new instance and test default parameters applied)
+				// chain multiple states
+			} )
+			
+			
+			describe( `Multiple states at once`, () => {
+			
+			} )
+		} )
 	} )
 } )
 
 
 
-function makeFactory( use: Function, seed: Seed = { generate: () => [] } )
+function makeFactory( use: Function, seed: Seed = makeSeed() )
 {
 	return new Factory( use, seed )
+}
+
+
+function makeSeed( params: any = [] ): Seed
+{
+	return { generate: () => params }
 }
 
 
