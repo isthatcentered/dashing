@@ -1,15 +1,17 @@
-import { Seed } from "./Seed"
+import { Seed, AbstractSeed } from "./Seed"
 
 
 
 
-export class SimpleSeed implements Seed
+export class SimpleSeed extends AbstractSeed implements Seed
 {
 	private readonly __seed: Array<any>
 	
 	
 	constructor( seed: Array<any> )
 	{
+		super()
+
 		if ( !this.__isValid( seed ) )
 			throw new Error( `Seed must be passed as Array` )
 		

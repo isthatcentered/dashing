@@ -1,10 +1,10 @@
 import { mobjectsDataGenerator } from "../Factory.spec"
-import { paramsFactory, Seed } from "./Seed"
+import { paramsFactory, Seed, AbstractSeed } from "./Seed"
 
 
 
 
-export class DynamicSeed implements Seed
+export class DynamicSeed extends AbstractSeed implements Seed
 {
 	private readonly __generator: mobjectsDataGenerator
 	private readonly __factory: paramsFactory
@@ -12,6 +12,7 @@ export class DynamicSeed implements Seed
 	
 	constructor( generator: mobjectsDataGenerator, factory: paramsFactory )
 	{
+		super()
 		
 		if ( !this.__isValid( factory, generator ) )
 			throw new Error( "Seed must be a function returning Array" )

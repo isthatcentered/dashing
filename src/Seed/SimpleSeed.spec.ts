@@ -1,4 +1,5 @@
 import { SimpleSeed } from "./SimpleSeed"
+import { AbstractSeed } from "./Seed";
 
 
 
@@ -6,7 +7,11 @@ import { SimpleSeed } from "./SimpleSeed"
 describe( `SimpleSeed`, () => {
 	
 	describe( `Instantiation`, () => {
-		
+	
+		it(`Should extend from AbstractSeed`, () => {			
+			expect(new SimpleSeed([])).toBeInstanceOf(AbstractSeed)
+		})
+
 		it( `Should throw if passed anything but array`, () => {
 			
 			const invalids = [ undefined, null, 0, "hello", {} ]
