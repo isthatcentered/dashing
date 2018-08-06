@@ -11,11 +11,14 @@ export interface Seed
 	merge(seed: Seed): Seed
 }
 
-export abstract class AbstractSeed implements Seed {
+export class SeedComponent implements Seed {
 	
-	abstract generate(): any[] 
+	generate(): any[] {
+		throw new Error("Method generate() not implemented")
+	}
 	
 	merge(seed: Seed): Seed {
-		throw new Error("Method not implemented.");
+		// return new SeedComposite(this, seed)
+		return {generate: () => [], merge: () => this}
 	}
 }

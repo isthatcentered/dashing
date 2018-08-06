@@ -1,4 +1,4 @@
-import { Seed, AbstractSeed } from "./Seed"
+import { Seed, SeedComponent } from "./Seed"
 import { DynamicSeed } from "./DynamicSeed"
 
 
@@ -9,7 +9,7 @@ describe( `Dynamic seed`, () => {
 	describe( `Instantiating`, () => {
 		
 		it(`Should extend from AbstractSeed`, () => {			
-			expect(makeDynamicSeed(_ => [])).toBeInstanceOf(AbstractSeed)
+			expect(makeDynamicSeed(_ => [])).toBeInstanceOf(SeedComponent)
 		})
 
 		it( `Should throw if passed anything but function`, () => {

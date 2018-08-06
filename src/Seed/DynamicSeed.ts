@@ -1,10 +1,10 @@
 import { mobjectsDataGenerator } from "../Factory.spec"
-import { paramsFactory, Seed, AbstractSeed } from "./Seed"
+import { paramsFactory, Seed, SeedComponent } from "./Seed"
 
 
 
 
-export class DynamicSeed extends AbstractSeed implements Seed
+export class DynamicSeed extends SeedComponent implements Seed
 {
 	private readonly __generator: mobjectsDataGenerator
 	private readonly __factory: paramsFactory

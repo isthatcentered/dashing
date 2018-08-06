@@ -1,9 +1,9 @@
-import { Seed, AbstractSeed } from "./Seed"
+import { Seed, SeedComponent } from "./Seed"
 
 
 
 
-export class SimpleSeed extends AbstractSeed implements Seed
+export class SimpleSeed extends SeedComponent implements Seed
 {
 	private readonly __seed: Array<any>
 	

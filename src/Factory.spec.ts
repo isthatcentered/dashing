@@ -147,7 +147,7 @@ describe( `Factory`, () => {
 		
 		describe( `Getting a registered state`, () => {
 			
-			it( `Should apply state parameters on top of defaults`, () => {
+			xit( `Should apply state parameters on top of defaults`, () => {
 				
 				let stateConfig = [ "some specific param for this state" ]
 				

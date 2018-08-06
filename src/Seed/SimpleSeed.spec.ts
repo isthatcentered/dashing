@@ -1,5 +1,5 @@
 import { SimpleSeed } from "./SimpleSeed"
-import { AbstractSeed } from "./Seed";
+import { SeedComponent } from "./Seed";
 
 
 
@@ -9,7 +9,7 @@ describe( `SimpleSeed`, () => {
 	describe( `Instantiation`, () => {
 	
 		it(`Should extend from AbstractSeed`, () => {			
-			expect(new SimpleSeed([])).toBeInstanceOf(AbstractSeed)
+			expect(new SimpleSeed([])).toBeInstanceOf(SeedComponent)
 		})
 
 		it( `Should throw if passed anything but array`, () => {
