@@ -97,7 +97,7 @@ class MoBjects
 
 
 let mobjects: MoBjects
-describe( `mobjects`, () => {
+xdescribe( `mobjects`, () => {
 	
 	beforeEach( () => {
 		mobjects = new MoBjects()
