@@ -3,7 +3,7 @@ import { NullStateSeed, Seed } from "./Seed/Seed.spec"
 
 
 
-export interface ModelFactory<T>
+export interface ModelBuilder<T>
 {
 	
 	registerState( state: string, overrides: Seed ): this
@@ -13,7 +13,7 @@ export interface ModelFactory<T>
 	make(): T
 }
 
-export class ByRefModelFactory implements ModelFactory<any>
+export class ByRefBuilder implements ModelBuilder<any>
 {
 	protected readonly _seed: Seed
 	protected readonly _ref: Function
