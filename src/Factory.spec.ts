@@ -54,7 +54,6 @@ class ByRefModelFactory implements ModelFactory<any>
 	constructor( ref: Function, seed: StateSeed )
 	{
 		this._ref = ref
-		
 		this._seed = seed
 	}
 	
@@ -64,8 +63,11 @@ class ByRefModelFactory implements ModelFactory<any>
 		const params = this._seed
 			.merge( overrides )
 			.merge( this._state )
+			.generate()
 		
-		return new (this._ref as any)( ...params.generate() )
+		this.reset()
+		
+		return new (this._ref as any)( ...params )
 	}
 	
 	
@@ -88,6 +90,12 @@ class ByRefModelFactory implements ModelFactory<any>
 		this._states[ state ] = overrides
 		
 		return this
+	}
+	
+	
+	reset(): void
+	{
+		this._state = new NullStateSeed()
 	}
 	
 	
@@ -155,8 +163,8 @@ describe( `ByRefModelFactory`, () => {
 		describe( `Overriding default state`, () =>
 			it( `Should instantiate new class with result of defaultSeed.merge( overrideSeed ) as params`, () => {
 				
-				let defaultSeed: StateSeed  = makeSpySeed(  ),
-				    overrideSeed: StateSeed = makeSpySeed(  ),
+				let defaultSeed: StateSeed  = makeSpySeed(),
+				    overrideSeed: StateSeed = makeSpySeed(),
 				    mockReturn              = [ "The mock return" ];
 				
 				(defaultSeed.generate as Mock).mockReturnValue( mockReturn )
@@ -244,20 +252,42 @@ describe( `ByRefModelFactory`, () => {
 				.registerState( "STATE", makeSpySeed() )
 				.applyState( "STATE" )
 			
+			let stateSeed = factory.getActiveStateSpySeed()
+			
 			factory.make()
 			
-			expect( defaultSeed.merge ).lastCalledWith( factory.getActiveStateSpySeed() )
+			expect( defaultSeed.merge ).lastCalledWith( stateSeed )
 		} )
 		
 		it( `Should reset active state on make`, () => {
 			
-			// active state should be instance of nullseed
+			const stateSeed = makeSpySeed()
+			
+			const factory = new TestableByRefModelFactory( SomeClass, makeSpySeed() )
+				.registerState( "STATE", stateSeed )
+				.applyState( "STATE" )
+			
+			const activatedState = factory.getActivatedState()
+			
+			factory.make()
+			
+			expect( factory.getActivatedState() ).not.toBe( activatedState )
+			expect( factory.getActivatedState() ).toBeInstanceOf( NullStateSeed )
 		} )
 		
-		// call reset after make
-		
-		describe( `With overrides on top`, () => {
-		
+		it( `Should apply states on top of overrides`, () => {
+			
+			const defaultSeed   = makeSpySeed(),
+			      overridesSeed = makeSpySeed()
+			
+			const factory = new TestableByRefModelFactory( SomeClass, defaultSeed )
+			
+			const stateSeed = factory.getActivatedState()
+			
+			factory.make( overridesSeed )
+			
+			expect( defaultSeed.merge ).toHaveBeenCalledWith( overridesSeed )
+			expect( defaultSeed.merge ).toHaveBeenLastCalledWith( stateSeed )
 		} )
 	} )
 } )
