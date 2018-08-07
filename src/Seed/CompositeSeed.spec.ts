@@ -1,5 +1,6 @@
 import { Seed } from "./Seed.spec"
 import { merge } from "lodash"
+import { CompositeSeed } from "./CompositeSeed"
 import Mock = jest.Mock
 
 
@@ -7,41 +8,6 @@ import Mock = jest.Mock
 
 jest.mock( "lodash", () => ({ merge: jest.fn() }) )
 
-
-export class CompositeSeed implements Seed
-{
-	protected _items: Array<Seed> = []
-	
-	
-	constructor( seeds?: Array<Seed> )
-	{
-		if ( seeds && seeds.length )
-			seeds.forEach( s => this._items.push( s ) )
-	}
-	
-	
-	generate()
-	{
-		return this._items.length ?
-		       this._items
-			       .reduce(
-				       ( acc: any[], i: Seed ) =>
-					       merge( acc, i.generate() ),
-				       [],
-			       ) :
-		       []
-	}
-	
-	
-	merge( seed: Seed )
-	{
-		
-		this._items.push( seed )
-		
-		return this
-	}
-	
-}
 
 export class TestableCompositeSeed extends CompositeSeed
 {
@@ -132,16 +98,7 @@ describe( `CompositeSeed`, () => {
 			    secondSeed  = makeSpySeed( "second" ),
 			    thirdSeed   = makeSpySeed( "third" );
 			
-			(merge as jest.Mock).mockImplementation( (() => {
-				
-				let args = ""
-				
-				return val => {
-					args += val
-					console.log( "args:::", args )
-					return args
-				}
-			})() ) // return passed arg
+			(merge as jest.Mock).mockImplementation( ( ...args ) => args.join( "" ) )
 			
 			const composite = new TestableCompositeSeed( [ defaultSeed ] )
 				.merge( secondSeed )
@@ -151,16 +108,14 @@ describe( `CompositeSeed`, () => {
 			
 			expect( merge ).toHaveBeenCalledTimes( 3 )
 			
-			console.log( merge.mock.calls )
+			expect( merge ).toHaveBeenNthCalledWith( 1, expect.anything(), defaultSeed.generate() )
 			expect( merge ).toHaveBeenNthCalledWith( 2, defaultSeed.generate(), secondSeed.generate() )
-			
-			// expect( merge ).toHaveBeenNthCalledWith( 1, secondSeed.generate(), thirdSeed.generate() )
-			
-			// expect( composite.generate() ).toEqual( "first second third" )
+			expect( merge ).toHaveBeenNthCalledWith( 3, expect.stringContaining( secondSeed.generate() as any ), thirdSeed.generate() ) // returns [ "firstsecond", "third"]
 		} )
 	} )
 } )
 
+merge.mockRestore()
 
 
 function makeSpySeed( returns: any = [] ): Seed

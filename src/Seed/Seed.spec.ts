@@ -1,6 +1,10 @@
-import { CompositeSeed } from "./CompositeSeed.spec"
+import { CompositeSeed } from "./CompositeSeed"
+import Mock = jest.Mock
 
 
+
+
+jest.mock( "./CompositeSeed" )
 
 
 export type modelState = Array<any>
@@ -34,19 +38,19 @@ export class simpleSeed implements Seed
 	
 	constructor( data: modelState )
 	{
-		this._data = [...data]
+		this._data = [ ...data ]
 	}
 	
 	
 	generate(): modelState
 	{
-		return [...this._data]
+		return [ ...this._data ]
 	}
 	
 	
 	merge( seed: Seed ): Seed
 	{
-		return new CompositeSeed([this,seed])
+		return new CompositeSeed( [ this, seed ] )
 	}
 	
 	
@@ -61,6 +65,10 @@ class TestableSimpleSeed extends simpleSeed
 }
 
 describe( `SimpleSeed`, () => {
+	
+	beforeEach( () => {
+		(CompositeSeed as any).mockReset()
+	} )
 	
 	describe( `Instantiation`, () => {
 		
@@ -85,20 +93,23 @@ describe( `SimpleSeed`, () => {
 		} )
 	} )
 	
-	xdescribe( `merge()`, () => {
+	describe( `merge()`, () => {
 		
 		it( `Should return a composite seed with current and merged in data`, () => {
 			
-			const data = [ "batman", "alfred" ]
+			const seed      = new TestableSimpleSeed( [ "batman", "alfred" ] ),
+			      otherSeed = makeSpySeed( [ "Robin" ] )
 			
-			const seed = new TestableSimpleSeed( data ).merge(makeSpySeed("robin"))
+			const composite = seed.merge( otherSeed )
 			
-			expect( seed ).toBeInstanceOf( CompositeSeed )
+			expect( composite ).toBeInstanceOf( CompositeSeed )
 			
-			expect(seed.generate()).toEqual(["robin", "alfred"])
+			expect( CompositeSeed ).toHaveBeenCalledWith( [ seed, otherSeed ] )
 		} )
 	} )
 } )
+
+
 
 function makeSpySeed( returns: any = [] ): Seed
 {
