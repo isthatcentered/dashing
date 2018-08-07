@@ -71,7 +71,8 @@ class ByRefModelFactory implements ModelFactory<any>
 	
 	applyState( state: string ): this
 	{
-		
+		if ( !this._hasState( state ) )
+			throw new Error( `No state ${state} registered.` )
 		this._state = this._states[ state ]
 		
 		return this
@@ -153,7 +154,6 @@ describe( `ByRefModelFactory`, () => {
 			} ) )
 	} )
 	
-	
 	describe( `Registering a model state with registerState()`, () => {
 		
 		it( `Should accept a name and a seed`, () => {
@@ -188,6 +188,22 @@ describe( `ByRefModelFactory`, () => {
 	
 	describe( `Applying a state to model with applyState()`, () => {
 		
+		it( `Should be fluent`, () => {
+			
+			let factory = new TestableByRefModelFactory( SomeClass, makeSpySeed() ).registerState("meh", makeSpySeed())
+			
+			expect(factory.applyState("meh")).toBeInstanceOf(ByRefModelFactory)
+		} )
+		
+		it( `Should throw if state not registered`, () => {
+			
+			let factory = new TestableByRefModelFactory( SomeClass, makeSpySeed() )
+			
+			expect( Object.keys( factory.getRegisteredStates() ) ).not.toContain( "TEST_STATE" )
+			
+			expect( () => factory.applyState( "TEST_STATE" ) ).toThrow()
+		} )
+		
 		describe( `Single state`, () => {
 			
 			it( `Should override default state with result of state`, () => {
@@ -198,30 +214,18 @@ describe( `ByRefModelFactory`, () => {
 				
 				let factory = new TestableByRefModelFactory( SomeClass, defaultSeed )
 					.registerState( "STATE", stateSeed )
-				
-				factory.applyState( "STATE" )
+					.applyState( "STATE" )
 				
 				expect( factory.getActivatedState() ).toBe( stateSeed )
-				
-				let made = factory.make( overridesSeed )
-				
+				expect( factory.make( overridesSeed ).param1 ).toBe( "result of default state seed generate" )
 				expect( defaultSeed.merge ).toHaveBeenNthCalledWith( 1, overridesSeed )
 				expect( defaultSeed.merge ).toHaveBeenNthCalledWith( 2, stateSeed )
-				
-				expect( made.param1 ).toBe( "result of default state seed generate" )
-			} )
-			
-			describe( `Throw if state not registered`, () => {
-			
-			} )
-			
-			describe( `Should be fluent`, () => {
-			
 			} )
 		} )
 		
 		describe( `Multiple states`, () => {
 			// called merge on cirrent state
+			// call reset after make
 		} )
 		
 		describe( `With overrides on top`, () => {
