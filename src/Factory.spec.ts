@@ -1,4 +1,5 @@
 import Mock = jest.Mock
+import { NullStateSeed, Seed } from "./Seed.spec"
 
 
 
@@ -10,55 +11,32 @@ class SomeClass
 	}
 }
 
-export type modelState = Array<any>
-
 export interface ModelFactory<T>
 {
 	
-	registerState( state: string, overrides: StateSeed ): this
+	registerState( state: string, overrides: Seed ): this
 	
 	applyState( state: string ): this
 	
 	make(): T
 }
 
-export interface StateSeed
+export class ByRefModelFactory implements ModelFactory<any>
 {
-	generate(): Array<any>
-	
-	merge( seed: StateSeed ): StateSeed
-}
-
-class NullStateSeed implements StateSeed
-{
-	generate(): Array<any>
-	{
-		return []
-	}
-	
-	
-	merge( seed: StateSeed ): this
-	{
-		return this
-	}
-}
-
-class ByRefModelFactory implements ModelFactory<any>
-{
-	protected readonly _seed: StateSeed
+	protected readonly _seed: Seed
 	protected readonly _ref: Function
-	protected _states: { [ state: string ]: StateSeed } = {}
-	protected _state: StateSeed = new NullStateSeed()
+	protected _states: { [ state: string ]: Seed } = {}
+	protected _state: Seed = new NullStateSeed()
 	
 	
-	constructor( ref: Function, seed: StateSeed )
+	constructor( ref: Function, seed: Seed )
 	{
 		this._ref = ref
 		this._seed = seed
 	}
 	
 	
-	make( overrides: StateSeed = new NullStateSeed() )
+	make( overrides: Seed = new NullStateSeed() )
 	{
 		const params = this._seed
 			.merge( overrides )
@@ -82,7 +60,7 @@ class ByRefModelFactory implements ModelFactory<any>
 	}
 	
 	
-	registerState( state: string, overrides: StateSeed ): this
+	registerState( state: string, overrides: Seed ): this
 	{
 		if ( this._hasState( state ) )
 			throw new Error( "Cannot register a state twice" )
@@ -105,7 +83,7 @@ class ByRefModelFactory implements ModelFactory<any>
 	}
 	
 	
-	private _getState( state: string ): StateSeed
+	private _getState( state: string ): Seed
 	{
 		return this._states[ state ]
 	}
@@ -117,19 +95,19 @@ class TestableByRefModelFactory extends ByRefModelFactory
 	protected _state = makeSpySeed()
 	
 	
-	getActiveStateSpySeed(): StateSeed
+	getActiveStateSpySeed(): Seed
 	{
 		return this._state
 	}
 	
 	
-	getRegisteredStates(): { [ name: string ]: StateSeed }
+	getRegisteredStates(): { [ name: string ]: Seed }
 	{
 		return this._states
 	}
 	
 	
-	getActivatedState(): StateSeed
+	getActivatedState(): Seed
 	{
 		return this._state
 	}
@@ -163,9 +141,9 @@ describe( `ByRefModelFactory`, () => {
 		describe( `Overriding default state`, () =>
 			it( `Should instantiate new class with result of defaultSeed.merge( overrideSeed ) as params`, () => {
 				
-				let defaultSeed: StateSeed  = makeSpySeed(),
-				    overrideSeed: StateSeed = makeSpySeed(),
-				    mockReturn              = [ "The mock return" ];
+				let defaultSeed: Seed  = makeSpySeed(),
+				    overrideSeed: Seed = makeSpySeed(),
+				    mockReturn         = [ "The mock return" ];
 				
 				(defaultSeed.generate as Mock).mockReturnValue( mockReturn )
 				
@@ -293,7 +271,7 @@ describe( `ByRefModelFactory`, () => {
 } )
 
 
-function makeSpySeed( returns: any[] = [] ): StateSeed
+function makeSpySeed( returns: any[] = [] ): Seed
 {
 	return {
 		generate: jest.fn().mockReturnValue( returns ),
