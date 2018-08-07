@@ -37,7 +37,12 @@ class CompositeSeed implements Seed
 	
 	generate()
 	{
-		return this._items.reduce( ( acc, i ) => [ ...acc, i.generate() ], [] )
+		return this._items
+			.reduce(
+				( acc: any[], i: Seed ) =>
+					[ ...acc, i.generate() ],
+				[],
+			)
 	}
 	
 	
