@@ -1,6 +1,11 @@
 import { Seed } from "./Seed.spec"
+import { merge } from "lodash"
+import Mock = jest.Mock
 
 
+
+
+jest.mock( "lodash", () => ({ merge: jest.fn() }) )
 
 
 export class CompositeSeed implements Seed
@@ -21,7 +26,7 @@ export class CompositeSeed implements Seed
 		       this._items
 			       .reduce(
 				       ( acc: any[], i: Seed ) =>
-					       [ ...acc, i.generate() ],
+					       merge( acc, i.generate() ),
 				       [],
 			       ) :
 		       []
@@ -51,6 +56,9 @@ export class TestableCompositeSeed extends CompositeSeed
 
 describe( `CompositeSeed`, () => {
 	
+	beforeEach( () => {
+		(merge as Mock).mockClear()
+	} )
 	
 	describe( `Instantiation`, () => {
 		
@@ -101,7 +109,11 @@ describe( `CompositeSeed`, () => {
 			expect( secondSeed.generate ).toHaveBeenCalled()
 		} )
 		
-		it( `Should call first added first, last added last`, () => {
+		it( `Should return empty array if no seeds contained`, () => {
+			expect( new TestableCompositeSeed().generate() ).toEqual( [] )
+		} )
+		
+		xit( `Should call first added first, last added last`, () => {
 			
 			let defaultSeed = makeSpySeed( "first" ),
 			    secondSeed  = makeSpySeed( "second" ),
@@ -114,8 +126,37 @@ describe( `CompositeSeed`, () => {
 			expect( composite.generate() ).toEqual( [ "first", "second", "third" ] )
 		} )
 		
-		it( `Should return empty array if no seeds contained`, () => {
-			expect( new TestableCompositeSeed().generate() ).toEqual( [] )
+		it( `Should merge the result of each seed into an array`, () => {
+			
+			let defaultSeed = makeSpySeed( "first" ),
+			    secondSeed  = makeSpySeed( "second" ),
+			    thirdSeed   = makeSpySeed( "third" );
+			
+			(merge as jest.Mock).mockImplementation( (() => {
+				
+				let args = ""
+				
+				return val => {
+					args += val
+					console.log( "args:::", args )
+					return args
+				}
+			})() ) // return passed arg
+			
+			const composite = new TestableCompositeSeed( [ defaultSeed ] )
+				.merge( secondSeed )
+				.merge( thirdSeed )
+			
+			composite.generate()
+			
+			expect( merge ).toHaveBeenCalledTimes( 3 )
+			
+			console.log( merge.mock.calls )
+			expect( merge ).toHaveBeenNthCalledWith( 2, defaultSeed.generate(), secondSeed.generate() )
+			
+			// expect( merge ).toHaveBeenNthCalledWith( 1, secondSeed.generate(), thirdSeed.generate() )
+			
+			// expect( composite.generate() ).toEqual( "first second third" )
 		} )
 	} )
 } )
