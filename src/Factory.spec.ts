@@ -1,5 +1,5 @@
 import Mock = jest.Mock
-import { NullStateSeed, Seed } from "./Seed.spec"
+import { NullStateSeed, Seed } from "./Seed/Seed.spec"
 
 
 

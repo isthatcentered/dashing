@@ -1,48 +1,30 @@
-export type modelState = Array<any>
-
-export interface Seed
-{
-	generate(): modelState
-	
-	merge( seed: Seed ): Seed
-}
-
-export class NullStateSeed implements Seed
-{
-	generate()
-	{
-		return []
-	}
-	
-	
-	merge( seed: Seed )
-	{
-		return this
-	}
-}
+import { Seed } from "./Seed.spec"
 
 
 
-class CompositeSeed implements Seed
+
+export class CompositeSeed implements Seed
 {
 	protected _items: Array<Seed> = []
 	
 	
-	constructor( seed?: Seed )
+	constructor( seeds?: Array<Seed> )
 	{
-		if ( seed )
-			this._items.push( seed )
+		if ( seeds && seeds.length )
+			seeds.forEach( s => this._items.push( s ) )
 	}
 	
 	
 	generate()
 	{
-		return this._items
-			.reduce(
-				( acc: any[], i: Seed ) =>
-					[ ...acc, i.generate() ],
-				[],
-			)
+		return this._items.length ?
+		       this._items
+			       .reduce(
+				       ( acc: any[], i: Seed ) =>
+					       [ ...acc, i.generate() ],
+				       [],
+			       ) :
+		       []
 	}
 	
 	
@@ -56,7 +38,7 @@ class CompositeSeed implements Seed
 	
 }
 
-class TestableCompositeSeed extends CompositeSeed
+export class TestableCompositeSeed extends CompositeSeed
 {
 	
 	getItems(): Array<Seed>
@@ -64,6 +46,8 @@ class TestableCompositeSeed extends CompositeSeed
 		return this._items
 	}
 }
+
+
 
 describe( `CompositeSeed`, () => {
 	
@@ -81,7 +65,7 @@ describe( `CompositeSeed`, () => {
 			
 			const seed = makeSpySeed()
 			
-			const composite = new TestableCompositeSeed( seed )
+			const composite = new TestableCompositeSeed( [ seed ] )
 			
 			expect( composite.getItems() ).toContain( seed )
 		} )
@@ -108,7 +92,7 @@ describe( `CompositeSeed`, () => {
 			const defaultSeed = makeSpySeed( "first" ),
 			      secondSeed  = makeSpySeed( "second" )
 			
-			const composite = new TestableCompositeSeed( defaultSeed )
+			const composite = new TestableCompositeSeed( [ defaultSeed ] )
 				.merge( secondSeed )
 			
 			composite.generate()
@@ -123,14 +107,19 @@ describe( `CompositeSeed`, () => {
 			    secondSeed  = makeSpySeed( "second" ),
 			    thirdSeed   = makeSpySeed( "third" )
 			
-			const composite = new TestableCompositeSeed( defaultSeed )
+			const composite = new TestableCompositeSeed( [ defaultSeed ] )
 				.merge( secondSeed )
 				.merge( thirdSeed )
 			
 			expect( composite.generate() ).toEqual( [ "first", "second", "third" ] )
 		} )
+		
+		it( `Should return empty array if no seeds contained`, () => {
+			expect( new TestableCompositeSeed().generate() ).toEqual( [] )
+		} )
 	} )
 } )
+
 
 
 function makeSpySeed( returns: any = [] ): Seed
@@ -140,4 +129,3 @@ function makeSpySeed( returns: any = [] ): Seed
 		merge:    jest.fn(),
 	}
 }
-
