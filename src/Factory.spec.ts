@@ -1,6 +1,6 @@
 import Mock = jest.Mock
 import { NullStateSeed, Seed } from "./Seed/Seed.spec"
-import { ByRefBuilder } from "./Factory"
+import { ClassBuilder } from "./Factory"
 
 
 
@@ -12,7 +12,7 @@ class SomeClass
 	}
 }
 
-class TestableByRefModelBuilder extends ByRefBuilder
+class TestableClassBuilder extends ClassBuilder
 {
 	
 	protected _state = makeSpySeed()
@@ -41,7 +41,7 @@ describe( `ByRefModelFactory`, () => {
 	
 	describe( `Instantiation`, () =>
 		it( `Should instantiate without errors`, () => {
-			new ByRefBuilder( SomeClass, makeSpySeed() )
+			new ClassBuilder( SomeClass, makeSpySeed() )
 		} ) )
 	
 	describe( `Creating a model with make()`, () => {
@@ -51,7 +51,7 @@ describe( `ByRefModelFactory`, () => {
 				
 				let seedResult = [ "batman", "alfred", "robin" ]
 				
-				let made = new ByRefBuilder( SomeClass, makeSpySeed( seedResult ) )
+				let made = new ClassBuilder( SomeClass, makeSpySeed( seedResult ) )
 					.make()
 				
 				expect( made ).toBeInstanceOf( SomeClass )
@@ -70,7 +70,7 @@ describe( `ByRefModelFactory`, () => {
 				
 				(defaultSeed.generate as Mock).mockReturnValue( mockReturn )
 				
-				let made = new ByRefBuilder( SomeClass, defaultSeed )
+				let made = new ClassBuilder( SomeClass, defaultSeed )
 					.make( overrideSeed )
 				
 				expect( defaultSeed.merge ).toHaveBeenCalledWith( overrideSeed )
@@ -85,7 +85,7 @@ describe( `ByRefModelFactory`, () => {
 			
 			let stateSeed = makeSpySeed()
 			
-			const factory = new TestableByRefModelBuilder( SomeClass, makeSpySeed() )
+			const factory = new TestableClassBuilder( SomeClass, makeSpySeed() )
 				.registerState( "stateName", stateSeed )
 			
 			expect( factory.getRegisteredStates()[ "stateName" ] ).toBe( stateSeed )
@@ -93,14 +93,14 @@ describe( `ByRefModelFactory`, () => {
 		
 		it( `Should be fluent`, () => {
 			
-			let factory = new ByRefBuilder( SomeClass, makeSpySeed() )
+			let factory = new ClassBuilder( SomeClass, makeSpySeed() )
 			
-			expect( factory.registerState( "stateName", makeSpySeed() ) ).toBeInstanceOf( ByRefBuilder )
+			expect( factory.registerState( "stateName", makeSpySeed() ) ).toBeInstanceOf( ClassBuilder )
 		} )
 		
 		it( `Should throw if state is already defined`, () => {
 			
-			const factory = new TestableByRefModelBuilder( SomeClass, makeSpySeed() )
+			const factory = new TestableClassBuilder( SomeClass, makeSpySeed() )
 				.registerState( "SAMENAME", makeSpySeed() )
 			
 			expect( () => factory.registerState( "SAMENAME", makeSpySeed() ) ).toThrow()
@@ -115,14 +115,14 @@ describe( `ByRefModelFactory`, () => {
 		
 		it( `Should be fluent`, () => {
 			
-			let factory = new TestableByRefModelBuilder( SomeClass, makeSpySeed() ).registerState( "meh", makeSpySeed() )
+			let factory = new TestableClassBuilder( SomeClass, makeSpySeed() ).registerState( "meh", makeSpySeed() )
 			
-			expect( factory.applyState( "meh" ) ).toBeInstanceOf( ByRefBuilder )
+			expect( factory.applyState( "meh" ) ).toBeInstanceOf( ClassBuilder )
 		} )
 		
 		it( `Should throw if state not registered`, () => {
 			
-			let factory = new TestableByRefModelBuilder( SomeClass, makeSpySeed() )
+			let factory = new TestableClassBuilder( SomeClass, makeSpySeed() )
 			
 			expect( Object.keys( factory.getRegisteredStates() ) ).not.toContain( "TEST_STATE" )
 			
@@ -134,7 +134,7 @@ describe( `ByRefModelFactory`, () => {
 			let stateSeed1 = makeSpySeed(),
 			    stateSeed2 = makeSpySeed()
 			
-			let factory = new TestableByRefModelBuilder( SomeClass, makeSpySeed() )
+			let factory = new TestableClassBuilder( SomeClass, makeSpySeed() )
 				.registerState( "STATE_1", stateSeed1 )
 				.registerState( "STATE_2", stateSeed2 )
 				.applyState( "STATE_1" )
@@ -149,7 +149,7 @@ describe( `ByRefModelFactory`, () => {
 			
 			let defaultSeed = makeSpySeed()
 			
-			let factory = new TestableByRefModelBuilder( SomeClass, defaultSeed )
+			let factory = new TestableClassBuilder( SomeClass, defaultSeed )
 				.registerState( "STATE", makeSpySeed() )
 				.applyState( "STATE" )
 			
@@ -164,7 +164,7 @@ describe( `ByRefModelFactory`, () => {
 			
 			const stateSeed = makeSpySeed()
 			
-			const factory = new TestableByRefModelBuilder( SomeClass, makeSpySeed() )
+			const factory = new TestableClassBuilder( SomeClass, makeSpySeed() )
 				.registerState( "STATE", stateSeed )
 				.applyState( "STATE" )
 			
@@ -181,7 +181,7 @@ describe( `ByRefModelFactory`, () => {
 			const defaultSeed   = makeSpySeed(),
 			      overridesSeed = makeSpySeed()
 			
-			const factory = new TestableByRefModelBuilder( SomeClass, defaultSeed )
+			const factory = new TestableClassBuilder( SomeClass, defaultSeed )
 			
 			const stateSeed = factory.getActivatedState()
 			

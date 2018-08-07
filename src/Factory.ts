@@ -13,7 +13,7 @@ export interface ModelBuilder<T>
 	make(): T
 }
 
-export class ByRefBuilder implements ModelBuilder<any>
+export class ClassBuilder implements ModelBuilder<any>
 {
 	protected readonly _seed: Seed
 	protected readonly _ref: Function
