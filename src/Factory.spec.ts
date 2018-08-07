@@ -73,7 +73,8 @@ class ByRefModelFactory implements ModelFactory<any>
 	{
 		if ( !this._hasState( state ) )
 			throw new Error( `No state ${state} registered.` )
-		this._state = this._states[ state ]
+		
+		this._state.merge( this._getState( state ) )
 		
 		return this
 	}
@@ -92,12 +93,27 @@ class ByRefModelFactory implements ModelFactory<any>
 	
 	private _hasState( state: string ): boolean
 	{
-		return this._states[ state ] !== undefined
+		return this._getState( state ) !== undefined
+	}
+	
+	
+	private _getState( state: string ): StateSeed
+	{
+		return this._states[ state ]
 	}
 }
 
 class TestableByRefModelFactory extends ByRefModelFactory
 {
+	
+	protected _state = makeSpySeed()
+	
+	
+	getActiveStateSpySeed(): StateSeed
+	{
+		return this._state
+	}
+	
 	
 	getRegisteredStates(): { [ name: string ]: StateSeed }
 	{
@@ -139,8 +155,8 @@ describe( `ByRefModelFactory`, () => {
 		describe( `Overriding default state`, () =>
 			it( `Should instantiate new class with result of defaultSeed.merge( overrideSeed ) as params`, () => {
 				
-				let defaultSeed: StateSeed  = makeSpySeed( [ "overriden by mock config" ] ),
-				    overrideSeed: StateSeed = makeSpySeed( [ "overriden by mock config" ] ),
+				let defaultSeed: StateSeed  = makeSpySeed(  ),
+				    overrideSeed: StateSeed = makeSpySeed(  ),
 				    mockReturn              = [ "The mock return" ];
 				
 				(defaultSeed.generate as Mock).mockReturnValue( mockReturn )
@@ -190,9 +206,9 @@ describe( `ByRefModelFactory`, () => {
 		
 		it( `Should be fluent`, () => {
 			
-			let factory = new TestableByRefModelFactory( SomeClass, makeSpySeed() ).registerState("meh", makeSpySeed())
+			let factory = new TestableByRefModelFactory( SomeClass, makeSpySeed() ).registerState( "meh", makeSpySeed() )
 			
-			expect(factory.applyState("meh")).toBeInstanceOf(ByRefModelFactory)
+			expect( factory.applyState( "meh" ) ).toBeInstanceOf( ByRefModelFactory )
 		} )
 		
 		it( `Should throw if state not registered`, () => {
@@ -204,29 +220,41 @@ describe( `ByRefModelFactory`, () => {
 			expect( () => factory.applyState( "TEST_STATE" ) ).toThrow()
 		} )
 		
-		describe( `Single state`, () => {
+		it( `Should merge each new state with active state`, () => {
 			
-			it( `Should override default state with result of state`, () => {
-				
-				let defaultSeed: StateSeed   = makeSpySeed( [ "result of default state seed generate" ] ),
-				    overridesSeed: StateSeed = makeSpySeed(),
-				    stateSeed                = makeSpySeed()
-				
-				let factory = new TestableByRefModelFactory( SomeClass, defaultSeed )
-					.registerState( "STATE", stateSeed )
-					.applyState( "STATE" )
-				
-				expect( factory.getActivatedState() ).toBe( stateSeed )
-				expect( factory.make( overridesSeed ).param1 ).toBe( "result of default state seed generate" )
-				expect( defaultSeed.merge ).toHaveBeenNthCalledWith( 1, overridesSeed )
-				expect( defaultSeed.merge ).toHaveBeenNthCalledWith( 2, stateSeed )
-			} )
+			let stateSeed1 = makeSpySeed(),
+			    stateSeed2 = makeSpySeed()
+			
+			let factory = new TestableByRefModelFactory( SomeClass, makeSpySeed() )
+				.registerState( "STATE_1", stateSeed1 )
+				.registerState( "STATE_2", stateSeed2 )
+				.applyState( "STATE_1" )
+				.applyState( "STATE_2" )
+			
+			expect( factory.getActiveStateSpySeed().merge ).toHaveBeenCalledTimes( 2 )
+			expect( factory.getActiveStateSpySeed().merge ).toHaveBeenNthCalledWith( 1, stateSeed1 )
+			expect( factory.getActiveStateSpySeed().merge ).toHaveBeenNthCalledWith( 2, stateSeed2 )
 		} )
 		
-		describe( `Multiple states`, () => {
-			// called merge on cirrent state
-			// call reset after make
+		it( `Should merge active state into default state on make`, () => {
+			
+			let defaultSeed = makeSpySeed()
+			
+			let factory = new TestableByRefModelFactory( SomeClass, defaultSeed )
+				.registerState( "STATE", makeSpySeed() )
+				.applyState( "STATE" )
+			
+			factory.make()
+			
+			expect( defaultSeed.merge ).lastCalledWith( factory.getActiveStateSpySeed() )
 		} )
+		
+		it( `Should reset active state on make`, () => {
+			
+			// active state should be instance of nullseed
+		} )
+		
+		// call reset after make
 		
 		describe( `With overrides on top`, () => {
 		
