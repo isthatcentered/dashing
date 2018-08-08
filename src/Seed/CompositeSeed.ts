@@ -1,4 +1,4 @@
-import { Seed } from "./Seed.spec"
+import { Seed } from "./Seed"
 import { merge } from "lodash"
 
 

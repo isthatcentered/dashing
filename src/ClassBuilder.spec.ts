@@ -1,6 +1,8 @@
 import Mock = jest.Mock
-import { NullStateSeed, Seed } from "./Seed/Seed.spec"
-import { ClassBuilder } from "./Factory"
+import { Seed} from "./Seed/Seed"
+import { ClassBuilder } from "./ClassBuilder"
+import { SimpleSeed } from "./Seed/SimpleSeed"
+import { NullSeed } from "./Seed/NullSeed"
 
 
 
@@ -36,7 +38,7 @@ class TestableClassBuilder extends ClassBuilder
 	}
 }
 
-describe( `ByRefModelFactory`, () => {
+describe( `ClassBuilder`, () => {
 	
 	
 	describe( `Instantiation`, () =>
@@ -173,7 +175,7 @@ describe( `ByRefModelFactory`, () => {
 			factory.make()
 			
 			expect( factory.getActivatedState() ).not.toBe( activatedState )
-			expect( factory.getActivatedState() ).toBeInstanceOf( NullStateSeed )
+			expect( factory.getActivatedState() ).toBeInstanceOf( NullSeed )
 		} )
 		
 		it( `Should apply states on top of overrides`, () => {

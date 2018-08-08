@@ -1,5 +1,5 @@
-import { NullStateSeed, Seed } from "./Seed/Seed.spec"
-
+import { Seed } from "./Seed/Seed"
+import { NullSeed } from "./Seed/NullSeed"
 
 
 
@@ -18,7 +18,7 @@ export class ClassBuilder implements ModelBuilder<any>
 	protected readonly _seed: Seed
 	protected readonly _ref: Function
 	protected _states: { [ state: string ]: Seed } = {}
-	protected _state: Seed = new NullStateSeed()
+	protected _state: Seed = new NullSeed()
 	
 	
 	constructor( ref: Function, seed: Seed )
@@ -28,7 +28,7 @@ export class ClassBuilder implements ModelBuilder<any>
 	}
 	
 	
-	make( overrides: Seed = new NullStateSeed() )
+	make( overrides: Seed = new NullSeed() )
 	{
 		const params = this._seed
 			.merge( overrides )
@@ -45,9 +45,9 @@ export class ClassBuilder implements ModelBuilder<any>
 	{
 		if ( !this._hasState( state ) )
 			throw new Error( `No state ${state} registered.` )
-		
-		this._state.merge( this._getState( state ) )
-		
+
+		this._state = this._state.merge( this._getState( state ) )
+
 		return this
 	}
 	
@@ -65,7 +65,7 @@ export class ClassBuilder implements ModelBuilder<any>
 	
 	reset(): void
 	{
-		this._state = new NullStateSeed()
+		this._state = new NullSeed()
 	}
 	
 	
