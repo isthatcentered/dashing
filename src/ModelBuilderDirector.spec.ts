@@ -1,75 +1,37 @@
 import { ModelBuilder } from "./ClassBuilder"
 import { Seed } from "./Seed/Seed"
+import { ModelBuilderDirector } from "./ModelBuilderDirector"
+import Mock = jest.Mock
 
 
 
 
-export class ModelBuilderDirector
+export class TestableModelBuilderDirector extends ModelBuilderDirector<any>
 {
-	private _builder: ModelBuilder<any>
-	
-	
-	constructor( builder: ModelBuilder<any> )
-	{
-		this._builder = builder
-		
-	}
-	
-	
-	make( overrides?: Seed, states: string[] = [] ): any
-	{
-		
-		states.forEach( state =>
-			this._builder.applyState( state ) )
-		
-		this._builder.make( overrides )
-		
-		this.reset()
-	}
-	
-	
-	reset(): void
-	{
-	
-	}
-}
 
-export class TestableModelBuilderDirector extends ModelBuilderDirector
-{
-	
-	hasBeenReseted: boolean = false
-	
-	
-	reset()
-	{
-		super.reset()
-		this.hasBeenReseted = true
-	}
-	
 }
 
 describe( `ModelBuilderDirector`, () => {
 	
-	describe( `Instantiation`, () => {
-	
-	} )
-	
 	describe( `make()`, () => {
 		
-		it( `Should reset builder after each make`, () => {
+		describe( `Should return the result of builder's make`, () => {
 			
-			const director = new TestableModelBuilderDirector( makeBuilder() )
+			const builder = makeBuilder();
 			
-			director.make()
+			(builder.make as Mock).mockReturnValue( "batman" )
 			
-			expect( director.hasBeenReseted ).toBe( true )
+			const director = new TestableModelBuilderDirector( builder )
+			
+			expect( director.make() ).toBe( "batman" )
 		} )
+		
 		
 		describe( `No overrides`, () =>
 			it( `Should call builder's make with no params`, () => {
 				
 				const builder  = makeBuilder(),
-				      director = new ModelBuilderDirector( builder )
+				      director = new TestableModelBuilderDirector( builder )
 				
 				director.make()
 				
@@ -80,7 +42,7 @@ describe( `ModelBuilderDirector`, () => {
 			it( `Should call builder's make with overrides`, () => {
 				
 				const builder  = makeBuilder(),
-				      director = new ModelBuilderDirector( builder )
+				      director = new TestableModelBuilderDirector( builder )
 				
 				const overrides = makeOverrides()
 				
@@ -93,7 +55,7 @@ describe( `ModelBuilderDirector`, () => {
 			it( `Should call builder's applyState() for each supply state`, () => {
 				
 				const builder  = makeBuilder(),
-				      director = new ModelBuilderDirector( builder )
+				      director = new TestableModelBuilderDirector( builder )
 				
 				director.make( undefined, [ "battle", "defeated" ] )
 				
@@ -103,14 +65,46 @@ describe( `ModelBuilderDirector`, () => {
 			} ) )
 		
 		describe( `States & overrides`, () => {
-		
+			
+			const builder   = makeBuilder(),
+			      overrides = makeOverrides( [ "batman" ] ),
+			      director  = new TestableModelBuilderDirector( builder )
+			
+			director.make( overrides, [ "battle", "defeated" ] )
+			
+			expect( builder.applyState ).toHaveBeenCalledTimes( 2 )
+			expect( builder.make ).toHaveBeenCalledWith( overrides )
 		} )
 	} )
 	
 	describe( `registerState()`, () => {
+		it( `Should call builder's register state method`, () => {
+			
+			const builder     = makeBuilder(),
+			      stateParams = makeOverrides()
+			
+			const director = new TestableModelBuilderDirector( builder )
+			
+			director.registerState( "STATENAME", stateParams )
+			
+			expect( builder.registerState ).toHaveBeenCalledWith( "STATENAME", stateParams )
+		} )
+		
+		it( `Should be fluent`, () => {
+			
+			const director = new TestableModelBuilderDirector( makeBuilder() )
+			
+			expect( director.registerState( "STATENAME", makeOverrides() ) ).toBe( director )
+			
+		} )
+	} )
 	
+	it( `Collection/fixturama/dashing is the only thing left to write :D `, () => {
+		expect( true ).toBe( false )
+		
 	} )
 } )
+
 
 
 function makeOverrides( overrides: any = [ "batman", "robin" ] ): Seed
