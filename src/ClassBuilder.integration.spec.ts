@@ -60,7 +60,6 @@ describe( `ClassBuilder integration test`, () => {
 	
 	test( `Building a product with overrides & states`, () => {
 		
-		
 		const created: SomeClass = new ClassBuilder( SomeClass, new SimpleSeed( [
 			"batman",
 			"robin",
@@ -73,8 +72,5 @@ describe( `ClassBuilder integration test`, () => {
 		expect( created.param1 ).toBe( "batman" )
 		expect( created.param2 ).toBe( "KO robin" )
 		expect( created.param3 ).toBe( "scarecrow" )
-	} )
-	
-	describe( ``, () => {
 	} )
 } )
