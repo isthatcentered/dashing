@@ -16,16 +16,36 @@ export class ModelBuilderDirector
 	}
 	
 	
-	make( overrides?: Seed, states?: string[] ): any
+	make( overrides?: Seed, states: string[] = [] ): any
 	{
-		const params: any[] = [ overrides, states ].filter( p => p !== undefined )
 		
-		// @todo: foreach state -> applyState
+		states.forEach( state =>
+			this._builder.applyState( state ) )
 		
 		this._builder.make( overrides )
 		
-		//@todo: call reset
+		this.reset()
 	}
+	
+	
+	reset(): void
+	{
+	
+	}
+}
+
+export class TestableModelBuilderDirector extends ModelBuilderDirector
+{
+	
+	hasBeenReseted: boolean = false
+	
+	
+	reset()
+	{
+		super.reset()
+		this.hasBeenReseted = true
+	}
+	
 }
 
 describe( `ModelBuilderDirector`, () => {
@@ -38,7 +58,11 @@ describe( `ModelBuilderDirector`, () => {
 		
 		it( `Should reset builder after each make`, () => {
 			
-			expect( true ).toBe( false )
+			const director = new TestableModelBuilderDirector( makeBuilder() )
+			
+			director.make()
+			
+			expect( director.hasBeenReseted ).toBe( true )
 		} )
 		
 		describe( `No overrides`, () =>
@@ -65,24 +89,18 @@ describe( `ModelBuilderDirector`, () => {
 				expect( builder.make ).toHaveBeenCalledWith( overrides )
 			} ) )
 		
-		xdescribe( `States`, () => {
+		describe( `States`, () =>
 			it( `Should call builder's applyState() for each supply state`, () => {
 				
 				const builder  = makeBuilder(),
 				      director = new ModelBuilderDirector( builder )
 				
-				const overrides = makeOverrides(),
-				      states    = [ "battle", "defeated" ]
+				director.make( undefined, [ "battle", "defeated" ] )
 				
-				director.make( overrides, states )
-				
-				expect( builder.applyState ).toHaveBeenCalledTimes( 3 )
-			} )
-			
-			it( `Should throw if state unregistered`, () => {
-			
-			} )
-		} )
+				expect( builder.applyState ).toHaveBeenCalledTimes( 2 )
+				expect( builder.applyState ).toHaveBeenNthCalledWith( 1, "battle" )
+				expect( builder.applyState ).toHaveBeenNthCalledWith( 2, "defeated" )
+			} ) )
 		
 		describe( `States & overrides`, () => {
 		
