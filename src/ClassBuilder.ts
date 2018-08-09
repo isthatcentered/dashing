@@ -3,6 +3,7 @@ import { NullSeed } from "./Seed/NullSeed"
 
 
 
+
 export interface ModelBuilder<T>
 {
 	
@@ -10,7 +11,7 @@ export interface ModelBuilder<T>
 	
 	applyState( state: string ): this
 	
-	make(): T
+	make( overrides?: Seed ): T
 }
 
 export class ClassBuilder implements ModelBuilder<any>
@@ -45,9 +46,9 @@ export class ClassBuilder implements ModelBuilder<any>
 	{
 		if ( !this._hasState( state ) )
 			throw new Error( `No state ${state} registered.` )
-
+		
 		this._state = this._state.merge( this._getState( state ) )
-
+		
 		return this
 	}
 	
