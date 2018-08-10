@@ -92,63 +92,73 @@ class TestableDashing extends Dashing
 	
 }
 
+/*
+ * - Makes model (define(class, overrodes).make())
+ * - handle(model) returns director
+ * - Defaults as array
+ * - Defaults as function
+ * - unregistered model factory
+ */
 
+
+
+
+/*
 describe( `Dashing`, () => {
+
+describe( `define()`, () => {
 	
-	describe( `define()`, () => {
-		
-		it( `Should be fluent`, () => {
-			expect( new TestableDashing().define( SomeClass, [] ) ).toBeInstanceOf( Dashing )
-		} )
-		
-		it( `Should register a new director for passed model`, () => {
-			
-			const overrides = []
-			const dashing = new TestableDashing()
-			
-			dashing._makeDirector = jest.fn()
-			dashing._makeSeed = jest.fn().mockReturnValue( "batman" )
-			
-			dashing.define( SomeClass, overrides )
-			
-			expect( dashing._makeDirector ).toHaveBeenCalledWith( SomeClass, "batman" )
-			expect( dashing._makeSeed ).toHaveBeenCalledWith( overrides )
-		} )
-	} )
-	/*
-	xdescribe( `Defining a new model factory`, () => {
-		it( `Should register facotry for later access`, () => {
-			
-			
-			const dashing  = new TestableDashing(),
-			      defaults = [ "batman" ]
-			
-			const director = dashing.define( SomeClass, defaults )
-				.getFactory( SomeClass )
-			
-			expect( director ).toBeInstanceOf( ClassModelBuilderDirector )
-			
-		} )
+	it( `Should be fluent`, () => {
+		expect( new TestableDashing().define( SomeClass, [] ) ).toBeInstanceOf( Dashing )
 	} )
 	
-	xdescribe( `Making a model`, () => {
+	it( `Should register a new director for passed model`, () => {
 		
+		const overrides = []
+		const dashing = new TestableDashing()
 		
-		it( `Should return an instance of passed model with defaults`, () => {
+		dashing._makeDirector = jest.fn()
+		dashing._makeSeed = jest.fn().mockReturnValue( "batman" )
 		
-		} )
+		dashing.define( SomeClass, overrides )
 		
-		// faker defaults
-		describe( `Dynamic defaults`, () => {
-		
-		} )
-		
+		expect( dashing._makeDirector ).toHaveBeenCalledWith( SomeClass, "batman" )
+		expect( dashing._makeSeed ).toHaveBeenCalledWith( overrides )
 	} )
-	
-	test( ``, () => {
-	
-	} )
-	*/
 } )
+xdescribe( `Defining a new model factory`, () => {
+	it( `Should register facotry for later access`, () => {
+		
+		
+		const dashing  = new TestableDashing(),
+			  defaults = [ "batman" ]
+		
+		const director = dashing.define( SomeClass, defaults )
+			.getFactory( SomeClass )
+		
+		expect( director ).toBeInstanceOf( ClassModelBuilderDirector )
+		
+	} )
+} )
+
+xdescribe( `Making a model`, () => {
+	
+	
+	it( `Should return an instance of passed model with defaults`, () => {
+	
+	} )
+	
+	// faker defaults
+	describe( `Dynamic defaults`, () => {
+	
+	} )
+	
+} )
+
+test( ``, () => {
+
+} )
+} )
+*/
 
 
