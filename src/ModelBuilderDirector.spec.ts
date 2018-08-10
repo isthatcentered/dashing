@@ -1,12 +1,12 @@
 import { ModelBuilder } from "./ClassBuilder"
 import { Seed } from "./Seed/Seed"
-import { ModelBuilderDirector } from "./ModelBuilderDirector"
+import { ClassModelBuilderDirector } from "./ModelBuilderDirector"
 import Mock = jest.Mock
 
 
 
 
-export class TestableModelBuilderDirector extends ModelBuilderDirector<any>
+export class TestableModelBuilderDirector extends ClassModelBuilderDirector<any>
 {
 
 }
@@ -97,11 +97,6 @@ describe( `ModelBuilderDirector`, () => {
 			expect( director.registerState( "STATENAME", makeOverrides() ) ).toBe( director )
 			
 		} )
-	} )
-	
-	it( `Collection/fixturama/dashing is the only thing left to write :D `, () => {
-		expect( true ).toBe( false )
-		
 	} )
 } )
 
