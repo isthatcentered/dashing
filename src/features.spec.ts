@@ -359,8 +359,14 @@ describe( `Dashing`, () => {
 				made.forEach( m => expect( m ).toBeInstanceOf( SomeClass ) )
 			} )
 			
+			it( `Should reset the "times" count after make for next object`, () => {
+				expect( true ).toBe( false )
+			
+			} )
+			
 			it( `Should still apply defaults, overrides, and callbacks to each one`, () => {
 				expect( true ).toBe( false )
+				
 			} )
 		} )
 		
