@@ -77,6 +77,8 @@ class Factory
 				this._onCreated( instance ) || instance,
 			)
 		
+		this.reset()
+		
 		return afterCallbacks
 	}
 	
@@ -95,6 +97,12 @@ class Factory
 			this._activatedStates.push( this._getState( stateName ) ) )
 		
 		return this
+	}
+	
+	
+	reset()
+	{
+		this._activatedStates = []
 	}
 	
 	
@@ -210,6 +218,25 @@ describe( `Dashing`, () => {
 				expect( made.param1 ).toBe( "twoface" )
 				expect( made.param2 ).toBe( "scarecrow" )
 			} )
+			
+			it( `Should not inherit applied states of previous item on creation`, () => {
+				
+				const factory = new Dashing()
+					.define( SomeClass, _ => [ "bruce" ] )
+					.registerState( "meh", _ => [ "alfred" ] )
+				
+				factory.applyState( "meh" )
+				
+				const first: SomeClass = factory
+					.make()
+				
+				const second: SomeClass = factory
+					.make()
+				
+				expect( first.param1 ).toBe( "alfred" )
+				
+				expect( second.param1 ).toBe( "bruce" )
+			} )
 		} )
 		
 		
@@ -286,6 +313,7 @@ describe( `Dashing`, () => {
 		
 		describe( `Applying overrides`, () => {
 			it( `Should apply overrides on top of default AND states params`, () => {
+				
 				const factory = new Dashing()
 					.define( SomeClass, _ => [ "batman" ] )
 					.registerState( "blah", _ => [ "robin" ] )
@@ -314,7 +342,6 @@ describe( `Dashing`, () => {
 	
 	
 	
-	// @todo: resetting builder after make
 	// @todo: Should errors throw to break process or this is not what we want
 	// @todo: calling unregistered state
 	// @todo: normalizing state name
