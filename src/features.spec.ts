@@ -5,22 +5,37 @@ import { merge } from "lodash"
 
 class SomeClass
 {
+	private _stuff: any
 	
 	
 	constructor( public param1, public param2, public param3 )
 	{
+	}
+	
+	
+	setStuff( value: any )
+	{
+		this._stuff = value
+	}
+	
+	
+	getStuff()
+	{
+		return this._stuff
 	}
 }
 
 
 export type seedGenerator = ( generator ) => any[]
 
+export type onCreatedCallback = ( object: any ) => any
+
+
 interface FactorySlice
 {
 	model: Function,
 	factory: Factory,
 }
-
 
 class Factory
 {
@@ -29,12 +44,14 @@ class Factory
 	private _seed: seedGenerator
 	private _states: { [ name: string ]: seedGenerator } = {}
 	private _activatedStates: Array<seedGenerator> = []
+	private _onCreated: onCreatedCallback
 	
 	
-	constructor( generator: any, model: Function, seed: seedGenerator )
+	constructor( generator: any, model: Function, seed: seedGenerator, onCreated?: onCreatedCallback )
 	{
 		this._model = model
 		this._seed = seed
+		this._onCreated = onCreated || (( object ) => object)
 	}
 	
 	
@@ -47,7 +64,7 @@ class Factory
 			state( this._generator ),
 		), defaultState )
 		
-		return new (this._model as any)( ...state )
+		return this._onCreated( new (this._model as any)( ...state ) )
 	}
 	
 	
@@ -86,10 +103,10 @@ export class Dashing
 	private _generator: any = {}
 	
 	
-	define( model: Function, seed: seedGenerator ): Factory
+	define( model: Function, seed: seedGenerator, onCreated?: onCreatedCallback ): Factory
 	{
 		
-		const factory = new Factory( {}, model, seed )
+		const factory = new Factory( {}, model, seed, onCreated )
 		
 		this._factories.push( { model, factory } )
 		
@@ -123,7 +140,7 @@ describe( `Dashing`, () => {
 		
 		it( `Should return a model constructed with defaults as constructor params`, () => {
 			
-			const made = new Dashing()
+			const made: SomeClass = new Dashing()
 				.define( SomeClass, _ => [ "batman", "robin" ] )
 				.make()
 			
@@ -137,7 +154,7 @@ describe( `Dashing`, () => {
 		
 		it( `Should return model constructed with state override`, () => {
 			
-			const made = new Dashing()
+			const made: SomeClass = new Dashing()
 				.define( SomeClass, _ => [ "batman", "robin" ] )
 				.registerState( "defeated", _ => [ undefined, "joker" ] )
 				.applyState( "defeated" )
@@ -151,7 +168,7 @@ describe( `Dashing`, () => {
 			
 			it( `Should override default state in order of applyance`, () => {
 				
-				const made = new Dashing()
+				const made: SomeClass = new Dashing()
 					.define( SomeClass, _ => [ "batman", "robin" ] )
 					.registerState( "defeated", _ => [ undefined, "joker" ] )
 					.registerState( "takenOver", _ => [ "twoface", "scarecrow" ] )
@@ -162,19 +179,23 @@ describe( `Dashing`, () => {
 				expect( made.param1 ).toBe( "twoface" )
 				expect( made.param2 ).toBe( "scarecrow" )
 			} )
+			
+			// @todo: this belongs to unit test
+			describe( `Applying multiple states at once`, () => {
+				
+				const made = new Dashing()
+					.define( SomeClass, _ => [ "batman", "robin" ] )
+					.registerState( "defeated", _ => [ undefined, "joker" ] )
+					.registerState( "takenOver", _ => [ "twoface", "scarecrow" ] )
+					.applyState( "defeated", "takenOver" )
+					.make()
+				
+				expect( made.param1 ).toBe( "twoface" )
+				expect( made.param2 ).toBe( "scarecrow" )
+			} )
 		} )
 		
-		describe( `Alternate way of applying multiple states`, () => {
-			const made = new Dashing()
-				.define( SomeClass, _ => [ "batman", "robin" ] )
-				.registerState( "defeated", _ => [ undefined, "joker" ] )
-				.registerState( "takenOver", _ => [ "twoface", "scarecrow" ] )
-				.applyState( "defeated", "takenOver" )
-				.make()
-			
-			expect( made.param1 ).toBe( "twoface" )
-			expect( made.param2 ).toBe( "scarecrow" )
-		} )
+		// @todo: this test
 		xdescribe( `Normalizing state name`, () => {
 		
 		} )
@@ -182,13 +203,32 @@ describe( `Dashing`, () => {
 	
 	describe( `Defining an onCreated callback`, () => {
 		
-		describe( `On defaults`, () => {
-		
+		describe( `For every object created by this factory`, () => {
+			
+			
+			const onCreatedCallback = jest.fn().mockImplementation( made => {
+				
+				made.setStuff( "alfred" )
+				
+				return made
+			} )
+			
+			const made: SomeClass = new Dashing()
+				.define( SomeClass, _ => [], onCreatedCallback )
+				.make()
+			
+			expect( onCreatedCallback ).toHaveBeenCalledWith( made )
+			
+			expect( made.getStuff() ).toBe( "alfred" )
 		} )
 		
 		describe( `On a single state`, () => {
 		
 		} )
+	} )
+	
+	describe( `Hooks`, () => {
+		// @todo: other hooks ?
 	} )
 	
 	
@@ -208,6 +248,10 @@ describe( `Dashing`, () => {
 		
 		describe( `Creating a model with state`, () => {
 		
+		} )
+		
+		describe( `Creating multiple models at one`, () => {
+			// factory.times(3).create
 		} )
 	} )
 } )

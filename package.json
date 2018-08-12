@@ -4,7 +4,7 @@
     "description": "Model Factories just like in Laravel",
     "main": "index.js",
     "scripts": {
-        "test": "jest --watchAll",
+        "test": "jest --watchAll -b",
         "start": "parcel src/index.ts & yarn test",
         "build": "parcel build src/index.ts"
     },
@@ -28,6 +28,9 @@
         "transform": {
             "^.+\\.tsx?$": "ts-jest"
         },
+        "reporters": [
+            "jest-tap-reporter"
+        ],
         "testEnvironment": "node",
         "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
         "moduleFileExtensions": [
@@ -42,6 +45,7 @@
     "author": "Edouard Penin <e.peninb@gmail.com>",
     "license": "ISC",
     "devDependencies": {
+        "@types/faker": "^4.1.2",
         "@types/jest": "^23.3.1",
         "babel-plugin-transform-object-rest-spread": "^6.26.0",
         "babel-plugin-transform-runtime": "^6.23.0",
@@ -51,8 +55,8 @@
         "lodash": "^4.17.10",
         "parcel-bundler": "^1.9.7",
         "ts-jest": "^23.1.2",
-        "typescript": "^3.0.1",
-        "@types/faker": "^4.1.2"
+        "jest-tap-reporter": "^1.9.0",
+        "typescript": "^3.0.1"
     },
     "dependencies": {
     }
