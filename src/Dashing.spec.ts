@@ -1,164 +1,63 @@
-// Holds collection of directors
-// If builder already set throw
-// If not set create
-// Return builder
-//
-
-import { ClassModelBuilderDirector, ModelBuilderDirector } from "./ModelBuilderDirector"
-import { ClassBuilder } from "./ClassBuilder"
-import { Seed } from "./Seed/Seed"
+import { SimpleSeed } from "./Seed/SimpleSeed"
+import { Dashing } from "./Dashing"
 
 
 
 
 class SomeClass
 {
-
-}
-
-interface BuilderStoreSlice
-{
-	ref: Function,
-	director: ModelBuilderDirector<any>
-}
-
-export class NullClassModelBuilderDirector implements ModelBuilderDirector<any>
-{
-	make( overrides?, states? )
-	{
-		return {}
-	}
 	
-	
-	registerState( state, overrides ): this
+	constructor( public param1, public param2, public param3 )
 	{
-		return this
 	}
 }
 
-class Dashing
-{
-	
-	protected _registered: BuilderStoreSlice[] = []
-	
-	
-	handle( model: Function ): ModelBuilderDirector<any>
-	{
-		
-		return this._get( model )
-	}
-	
-	
-	define( model: Function, defaults: string[] | Function ): this
-	{
-		this._registered.push( {
-			ref:      model,
-			director: this._makeDirector( model, this._makeSeed( defaults ) ),
-		} )
-		
-		return this
-	}
-	
-	
-	protected _get( model: Function ): ModelBuilderDirector<any>
-	{
-		return (this._registered
-			.filter( r => r.ref === model ).pop() ||
-			{ director: new NullClassModelBuilderDirector() }).director
-	}
-	
-	
-	
-	protected _makeDirector( model: Function, seed: Seed )
-	{
-		return new ClassModelBuilderDirector( new ClassBuilder( model, seed ) )
-	}
-	
-	
-	protected _makeSeed( defaults: string[] | Function ): Seed
-	{
-		return undefined
-	}
-}
 
-class TestableDashing extends Dashing
-{
-	
-	getRegistered(): BuilderStoreSlice[]
-	{
-		return this._registered
-	}
-	
-	
-}
-
-/*
- * - Makes model (define(class, overrodes).make())
- * - handle(model) returns director
- * - Defaults as array
- * - Defaults as function
- * - unregistered model factory
- */
-
-
-
-
-/*
 describe( `Dashing`, () => {
-
-describe( `define()`, () => {
 	
-	it( `Should be fluent`, () => {
-		expect( new TestableDashing().define( SomeClass, [] ) ).toBeInstanceOf( Dashing )
+	describe( `Making a model with default config`, () => {
+		
+		it( `Should return the desired entity with set defaults`, () => {
+			
+			const director = new Dashing()
+				.define( SomeClass, makeSeed() )
+				.getFactory( SomeClass )
+			
+			const made = director.make()
+			
+			expect( made.param1 ).toBe( "batman" )
+			expect( made.param2 ).toBe( "robin" )
+			expect( made.param3 ).toBe( "alfred" )
+		} )
 	} )
 	
-	it( `Should register a new director for passed model`, () => {
+	describe( `Making a model with overrides`, () => {
 		
-		const overrides = []
-		const dashing = new TestableDashing()
-		
-		dashing._makeDirector = jest.fn()
-		dashing._makeSeed = jest.fn().mockReturnValue( "batman" )
-		
-		dashing.define( SomeClass, overrides )
-		
-		expect( dashing._makeDirector ).toHaveBeenCalledWith( SomeClass, "batman" )
-		expect( dashing._makeSeed ).toHaveBeenCalledWith( overrides )
-	} )
-} )
-xdescribe( `Defining a new model factory`, () => {
-	it( `Should register facotry for later access`, () => {
-		
-		
-		const dashing  = new TestableDashing(),
-			  defaults = [ "batman" ]
-		
-		const director = dashing.define( SomeClass, defaults )
-			.getFactory( SomeClass )
-		
-		expect( director ).toBeInstanceOf( ClassModelBuilderDirector )
-		
-	} )
-} )
-
-xdescribe( `Making a model`, () => {
-	
-	
-	it( `Should return an instance of passed model with defaults`, () => {
-	
+		it( `Should return the desired entity with set defaults`, () => {
+			
+			const director = new Dashing()
+				.define( SomeClass, makeSeed() )
+				.getFactory( SomeClass )
+			
+			const made = director.make( new SimpleSeed( [ undefined, "joker", "scarecrow" ] ) )
+			
+			expect( made.param1 ).toBe( "batman" )
+			expect( made.param2 ).toBe( "joker" )
+			expect( made.param3 ).toBe( "scarecrow" )
+		} )
 	} )
 	
-	// faker defaults
-	describe( `Dynamic defaults`, () => {
-	
-	} )
-	
+	/*
+	 * - Defaults as array
+	 * - Defaults as function
+	 * - unregistered model factory
+	 */
 } )
 
-test( ``, () => {
 
-} )
-} )
-*/
 
+function makeSeed( defaults = [ "batman", "robin", "alfred" ] )
+{
+	return new SimpleSeed( defaults )
+}
 

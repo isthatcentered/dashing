@@ -27,7 +27,7 @@ export class ClassModelBuilderDirector<T> implements ModelBuilderDirector<T>
 	}
 	
 	
-	make( overrides?, states = [] ): T
+	make( overrides?, states: string[] = [] ): T
 	{
 		
 		states.forEach( state =>
