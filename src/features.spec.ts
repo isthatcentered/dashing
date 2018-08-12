@@ -28,7 +28,7 @@ class SomeClass
 
 export type seedGenerator = ( generator ) => any[]
 
-export type onCreatedCallback = ( object: any ) => any
+export type onCreatedCallback = ( object: any ) => any | void
 
 
 interface FactorySlice
@@ -42,8 +42,8 @@ class Factory
 	private _generator: any
 	private _model: Function
 	private _seed: seedGenerator
-	private _states: { [ name: string ]: seedGenerator } = {}
-	private _activatedStates: Array<seedGenerator> = []
+	private _states: { [ name: string ]: { seed: seedGenerator, onCreated: onCreatedCallback } } = {}
+	private _activatedStates: Array<{ seed: seedGenerator, onCreated: onCreatedCallback }> = []
 	private _onCreated: onCreatedCallback
 	
 	
@@ -61,18 +61,25 @@ class Factory
 		
 		let state = this._activatedStates.reduce( ( refinedState, state ) => merge(
 			refinedState,
-			state( this._generator ),
+			state.seed( this._generator ),
 		), defaultState )
 		
 		let instance = new (this._model as any)( ...state )
-
-		return this._onCreated( instance ) || instance
+		
+		let afterCallbacks = this._activatedStates
+			.reduce(
+				( instance, state ) =>
+					state.onCreated( instance ) || instance,
+				this._onCreated( instance ) || instance,
+			)
+		
+		return afterCallbacks
 	}
 	
 	
-	registerState( stateName: string, seed: seedGenerator ): this
+	registerState( stateName: string, seed: seedGenerator, onCreated?: onCreatedCallback ): this
 	{
-		this._states[ stateName ] = seed
+		this._states[ stateName ] = { seed, onCreated: onCreated || (() => undefined) }
 		
 		return this
 	}
@@ -207,25 +214,72 @@ describe( `Dashing`, () => {
 		
 		describe( `For every object created by this factory`, () => {
 			
-			// @todo: add test for that, either return instance if immutable, or we return mutated instance
-			const onCreatedCallback = jest.fn().mockImplementation( made => {
-				made.setStuff( "alfred" )
+			it( `Should apply onCreated callback to newly created instance`, () => {
+				
+				// @todo: add test for that, either return instance if immutable, or we return mutated instance
+				const onCreatedCallback = jest.fn().mockImplementation( made => {
+					made.setStuff( "alfred" )
+				} )
+				
+				const made: SomeClass = new Dashing()
+					.define( SomeClass, _ => [], onCreatedCallback )
+					.make()
+				
+				expect( onCreatedCallback ).toHaveBeenCalledWith( made )
+				
+				expect( made ).toBeInstanceOf( SomeClass )
+				
+				expect( made.getStuff() ).toBe( "alfred" )
+			} )
+		} )
+		
+		describe( `For a state`, () => {
+			
+			it( `Should apply state's oncreated callback on top of default callback`, () => {
+				
+				const made: SomeClass = new Dashing()
+					.define( SomeClass, _ => [], o => {
+						o.setStuff( "alfred" )
+					} )
+					.registerState( "sleeping", () => [], o => {
+						o.setStuff( "sleeping alfred" )
+					} )
+					.applyState( "sleeping" )
+					.make()
+				
+				expect( made.getStuff() ).toBe( "sleeping alfred" )
 			} )
 			
-			const made: SomeClass = new Dashing()
-				.define( SomeClass, _ => [], onCreatedCallback )
-				.make()
-			
-			expect( onCreatedCallback ).toHaveBeenCalledWith( expect.anything() )
-			
-			expect( made ).toBeInstanceOf( SomeClass )
-
-			expect( made.getStuff() ).toBe( "alfred" )
+			it( `Should apply each state's oncreated callback in order of applyance`, () => {
+				
+				const made: SomeClass = new Dashing()
+					.define( SomeClass, _ => [], o => {
+						o.setStuff( "alfred" )
+					} )
+					.registerState( "sleeping", () => [], o => {
+						
+						expect( o.getStuff() ).toBe( "alfred" )
+						
+						o.setStuff( "sleeping alfred" )
+					} )
+					.registerState( "awake", () => [], o => {
+						
+						expect( o.getStuff() ).toBe( "sleeping alfred" )
+						
+						o.setStuff( "awaken alfred" )
+					} )
+					.applyState( "sleeping" )
+					.applyState( "awake" )
+					.make()
+				
+				expect( made.getStuff() ).toBe( "awaken alfred" )
+				
+				expect.assertions( 3 )
+			} )
 		} )
 		
-		describe( `On a single state`, () => {
-		
-		} )
+		// @todo: call reset() after make
+		// @todo: calling unregistered state
 	} )
 	
 	describe( `Hooks`, () => {
@@ -234,6 +288,11 @@ describe( `Dashing`, () => {
 	
 	
 	describe( `Using a factory`, () => {
+		
+		// @todo: this is a unit test for factory
+		describe( `Calling make should reset the builder `, () => {
+		
+		} )
 		
 		describe( `Creating the default model`, () => {
 			// getting the factory
