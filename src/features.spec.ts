@@ -45,6 +45,7 @@ class Factory
 	private _states: { [ name: string ]: { seed: seedGenerator, onCreated: onCreatedCallback } } = {}
 	private _activatedStates: Array<{ seed: seedGenerator, onCreated: onCreatedCallback }> = []
 	private _onCreated: onCreatedCallback
+	private _times: number = 1
 	
 	
 	constructor( generator: any, model: Function, seed: seedGenerator, onCreated?: onCreatedCallback )
@@ -57,29 +58,38 @@ class Factory
 	
 	make( overrides: seedGenerator = _ => [] ): any
 	{
-		let defaultState = this._seed( this._generator )
+		let made: any[] = []
 		
-		let state = [
-			...this._activatedStates.map( s => s.seed ),
-			overrides,
-		]
-			.reduce(
-				( state, seed ) => merge( state, seed( this._generator ) ),
-				defaultState,
-			)
-		
-		let instance = new (this._model as any)( ...state )
-		
-		let afterCallbacks = this._activatedStates
-			.reduce(
-				( instance, state ) =>
-					state.onCreated( instance ) || instance,
-				this._onCreated( instance ) || instance,
-			)
+		for ( let i = 0; i < this._times; i++ ) {
+			
+			let defaultState = this._seed( this._generator )
+			
+			let state = [
+				...this._activatedStates.map( s => s.seed ),
+				overrides,
+			]
+				.reduce(
+					( state, seed ) => merge( state, seed( this._generator ) ),
+					defaultState,
+				)
+			
+			let instance = new (this._model as any)( ...state )
+			
+			let afterCallbacks = this._activatedStates
+				.reduce(
+					( instance, state ) =>
+						state.onCreated( instance ) || instance,
+					this._onCreated( instance ) || instance,
+				)
+			
+			made.push( afterCallbacks )
+		}
 		
 		this.reset()
 		
-		return afterCallbacks
+		return made.length > 1 ?
+		       made :
+		       made.pop()
 	}
 	
 	
@@ -103,6 +113,16 @@ class Factory
 	reset()
 	{
 		this._activatedStates = []
+	}
+	
+	
+	times( number: number ): this
+	{
+		this._times = number > 0 ?
+		              number :
+		              1 // @todo: unit test for this
+		
+		return this
 	}
 	
 	
@@ -311,7 +331,7 @@ describe( `Dashing`, () => {
 			} )
 		} )
 		
-		describe( `Applying overrides`, () => {
+		describe( `Applying overrides`, () =>
 			it( `Should apply overrides on top of default AND states params`, () => {
 				
 				const factory = new Dashing()
@@ -322,11 +342,26 @@ describe( `Dashing`, () => {
 					.make( _ => [ "alfred" ] )
 				
 				expect( made.param1 ).toBe( "alfred" )
-			} )
-		} )
+			} ) )
 		
 		describe( `Generating multiple instances automatically`, () => {
-			// factory.times(3).create
+			it( `Should generate the desired number of instance`, () => {
+				
+				const factory: Factory = new Dashing()
+					.define( SomeClass, _ => [] )
+				
+				const made: Array<SomeClass> = factory
+					.times( 3 )
+					.make()
+				
+				expect( made.length ).toBe( 3 )
+				
+				made.forEach( m => expect( m ).toBeInstanceOf( SomeClass ) )
+			} )
+			
+			it( `Should still apply defaults, overrides, and callbacks to each one`, () => {
+				expect( true ).toBe( false )
+			} )
 		} )
 		
 		describe( `Using the generator for dynamic data`, () => {
@@ -335,6 +370,10 @@ describe( `Dashing`, () => {
 			} )
 			
 			describe( `For onCreated callback`, () => {
+			
+			} )
+			
+			describe( `When creating multiple instances`, () => {
 			
 			} )
 		} )
