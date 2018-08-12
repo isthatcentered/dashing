@@ -64,7 +64,9 @@ class Factory
 			state( this._generator ),
 		), defaultState )
 		
-		return this._onCreated( new (this._model as any)( ...state ) )
+		let instance = new (this._model as any)( ...state )
+
+		return this._onCreated( instance ) || instance
 	}
 	
 	
@@ -205,20 +207,19 @@ describe( `Dashing`, () => {
 		
 		describe( `For every object created by this factory`, () => {
 			
-			
+			// @todo: add test for that, either return instance if immutable, or we return mutated instance
 			const onCreatedCallback = jest.fn().mockImplementation( made => {
-				
 				made.setStuff( "alfred" )
-				
-				return made
 			} )
 			
 			const made: SomeClass = new Dashing()
 				.define( SomeClass, _ => [], onCreatedCallback )
 				.make()
 			
-			expect( onCreatedCallback ).toHaveBeenCalledWith( made )
+			expect( onCreatedCallback ).toHaveBeenCalledWith( expect.anything() )
 			
+			expect( made ).toBeInstanceOf( SomeClass )
+
 			expect( made.getStuff() ).toBe( "alfred" )
 		} )
 		
