@@ -144,43 +144,46 @@ export class Dashing
 
 describe( `Dashing`, () => {
 	
-	
-	describe( `Defining a factory with defaults`, () => {
+	describe( `Making an item`, () => {
 		
-		it( `Should return a model constructed with defaults as constructor params`, () => {
+		describe( `Default setup at creation`, () => {
 			
-			const made: SomeClass = new Dashing()
-				.define( SomeClass, _ => [ "batman", "robin" ] )
-				.make()
-			
-			
-			expect( made.param1 ).toBe( "batman" )
-			expect( made.param2 ).toBe( "robin" )
-		} )
-	} )
-	
-	describe( `Defining a factory state`, () => {
-		
-		it( `Should return model constructed with state override`, () => {
-			
-			const made: SomeClass = new Dashing()
-				.define( SomeClass, _ => [ "batman", "robin" ] )
-				.registerState( "defeated", _ => [ undefined, "joker" ] )
-				.applyState( "defeated" )
-				.make()
-			
-			expect( made.param1 ).toBe( "batman" )
-			expect( made.param2 ).toBe( "joker" )
-		} )
-		
-		describe( `Multiple states`, () => {
-			
-			it( `Should override default state in order of applyance`, () => {
+			it( `Should apply given defaults as instance's constructor params`, () => {
 				
 				const made: SomeClass = new Dashing()
 					.define( SomeClass, _ => [ "batman", "robin" ] )
+					.make()
+				
+				
+				expect( made.param1 ).toBe( "batman" )
+				expect( made.param2 ).toBe( "robin" )
+			} )
+		} )
+		
+		describe( `Apllying states`, () => {
+			
+			it( `Should return model constructed with state override`, () => {
+				
+				const factory: Factory = new Dashing()
+					.define( SomeClass, _ => [ "batman", "robin" ] )
+					.registerState( "defeated", _ => [ undefined, "joker" ] )
+				
+				const made: SomeClass = factory
+					.applyState( "defeated" )
+					.make()
+				
+				expect( made.param1 ).toBe( "batman" )
+				expect( made.param2 ).toBe( "joker" )
+			} )
+			
+			it( `Should override default state in order of applyance`, () => {
+				
+				const factory: Factory = new Dashing()
+					.define( SomeClass, _ => [ "batman", "robin" ] )
 					.registerState( "defeated", _ => [ undefined, "joker" ] )
 					.registerState( "takenOver", _ => [ "twoface", "scarecrow" ] )
+				
+				const made: SomeClass = factory
 					.applyState( "defeated" )
 					.applyState( "takenOver" )
 					.make()
@@ -189,13 +192,14 @@ describe( `Dashing`, () => {
 				expect( made.param2 ).toBe( "scarecrow" )
 			} )
 			
-			// @todo: this belongs to unit test
-			describe( `Applying multiple states at once`, () => {
+			it( `Should allow me to apply multiple states at once for convenience`, () => {
 				
-				const made = new Dashing()
+				const factory: Factory = new Dashing()
 					.define( SomeClass, _ => [ "batman", "robin" ] )
 					.registerState( "defeated", _ => [ undefined, "joker" ] )
 					.registerState( "takenOver", _ => [ "twoface", "scarecrow" ] )
+				
+				const made: SomeClass = factory
 					.applyState( "defeated", "takenOver" )
 					.make()
 				
@@ -204,114 +208,103 @@ describe( `Dashing`, () => {
 			} )
 		} )
 		
-		// @todo: this test
-		xdescribe( `Normalizing state name`, () => {
 		
-		} )
-	} )
-	
-	describe( `Defining an onCreated callback`, () => {
-		
-		describe( `For every object created by this factory`, () => {
+		describe( `After creation hook`, () => {
 			
-			it( `Should apply onCreated callback to newly created instance`, () => {
-				
-				// @todo: add test for that, either return instance if immutable, or we return mutated instance
-				const onCreatedCallback = jest.fn().mockImplementation( made => {
-					made.setStuff( "alfred" )
+			describe( `Default for every new instance`, () =>
+				it( `Should apply onCreated callback to newly created instance`, () => {
+					
+					const onCreatedCallback = jest.fn().mockImplementation( made => {
+						made.setStuff( "alfred" )
+					} )
+					
+					const made: SomeClass = new Dashing()
+						.define( SomeClass, _ => [], onCreatedCallback )
+						.make()
+					
+					expect( onCreatedCallback ).toHaveBeenCalledWith( made )
+					expect( made ).toBeInstanceOf( SomeClass )
+					expect( made.getStuff() ).toBe( "alfred" )
+				} ) )
+			
+			describe( `Per state`, () =>
+				it( `Should apply each state's oncreated callback in order of applyance`, () => {
+					
+					const factory: Factory = new Dashing()
+						.define( SomeClass, _ => [], o => {
+							o.setStuff( "alfred" )
+						} )
+						.registerState( "sleeping", () => [], o => {
+							
+							expect( o.getStuff() ).toBe( "alfred" )
+							
+							o.setStuff( "sleeping alfred" )
+						} )
+						.registerState( "awake", () => [], o => {
+							
+							expect( o.getStuff() ).toBe( "sleeping alfred" )
+							
+							o.setStuff( "awaken alfred" )
+						} )
+					
+					const made: SomeClass = factory
+						.applyState( "sleeping" )
+						.applyState( "awake" )
+						.make()
+					
+					expect( made.getStuff() ).toBe( "awaken alfred" )
+					
+					expect.assertions( 3 )
+				} ) )
+			
+			describe( `Returning an object to onCreated callback`, () => {
+				it( `Should use the returned object for following processes`, () => {
+					
+					const factory: Factory = new Dashing()
+						.define( SomeClass, _ => [], o => "batman" )
+						.registerState( "blah", () => [], o => {
+							
+							expect( o ).toBe( "batman" )
+							
+							return "robin"
+						} )
+					
+					const made: SomeClass = factory
+						.applyState( "blah" )
+						.make()
+					
+					expect( made ).toBe( "robin" )
+					
+					expect.assertions( 2 )
 				} )
-				
-				const made: SomeClass = new Dashing()
-					.define( SomeClass, _ => [], onCreatedCallback )
-					.make()
-				
-				expect( onCreatedCallback ).toHaveBeenCalledWith( made )
-				
-				expect( made ).toBeInstanceOf( SomeClass )
-				
-				expect( made.getStuff() ).toBe( "alfred" )
 			} )
 		} )
 		
-		describe( `For a state`, () => {
-			
-			it( `Should apply state's oncreated callback on top of default callback`, () => {
-				
-				const made: SomeClass = new Dashing()
-					.define( SomeClass, _ => [], o => {
-						o.setStuff( "alfred" )
-					} )
-					.registerState( "sleeping", () => [], o => {
-						o.setStuff( "sleeping alfred" )
-					} )
-					.applyState( "sleeping" )
-					.make()
-				
-				expect( made.getStuff() ).toBe( "sleeping alfred" )
-			} )
-			
-			it( `Should apply each state's oncreated callback in order of applyance`, () => {
-				
-				const made: SomeClass = new Dashing()
-					.define( SomeClass, _ => [], o => {
-						o.setStuff( "alfred" )
-					} )
-					.registerState( "sleeping", () => [], o => {
-						
-						expect( o.getStuff() ).toBe( "alfred" )
-						
-						o.setStuff( "sleeping alfred" )
-					} )
-					.registerState( "awake", () => [], o => {
-						
-						expect( o.getStuff() ).toBe( "sleeping alfred" )
-						
-						o.setStuff( "awaken alfred" )
-					} )
-					.applyState( "sleeping" )
-					.applyState( "awake" )
-					.make()
-				
-				expect( made.getStuff() ).toBe( "awaken alfred" )
-				
-				expect.assertions( 3 )
-			} )
-		} )
-		
-		// @todo: call reset() after make
-		// @todo: calling unregistered state
-	} )
-	
-	describe( `Hooks`, () => {
-		// @todo: other hooks ?
-	} )
-	
-	
-	describe( `Using a factory`, () => {
-		
-		// @todo: this is a unit test for factory
-		describe( `Calling make should reset the builder `, () => {
-		
-		} )
-		
-		describe( `Creating the default model`, () => {
-			// getting the factory
-		} )
-		
-		describe( `Overriding default attributes`, () => {
-		
-		} )
-		
-		describe( `Overriding on created ??`, () => {
-		
-		} )
-		
-		describe( `Creating a model with state`, () => {
-		
-		} )
-		
-		describe( `Creating multiple models at one`, () => {
+		describe( `Generating multiple instances automatically`, () => {
 			// factory.times(3).create
 		} )
+		
+		describe( `Applying overrides`, () => {
+		
+		} )
+		
+		describe( `Dynamic parametters`, () => {
+			describe( `For seeds`, () => {
+			
+			} )
+			
+			describe( `For onCreated callback`, () => {
+			
+			} )
+		} )
 	} )
+	
+	
+	
+	// @todo: resetting builder after make
+	// @todo: Should errors throw to break process or this is not what we want
+	// @todo: calling unregistered state
+	// @todo: normalizing state name
+	// @todo: call reset() after make
+	// @todo: other hooks ?
 } )
