@@ -47,7 +47,6 @@ class Factory
 			state( this._generator ),
 		), defaultState )
 		
-		console.log( state )
 		return new (this._model as any)( ...state )
 	}
 	
@@ -60,9 +59,10 @@ class Factory
 	}
 	
 	
-	applyState( stateName: string )
+	applyState( ...states: Array<string> )
 	{
-		this._activatedStates.push( this._getState( stateName ) )
+		states.forEach( stateName =>
+			this._activatedStates.push( this._getState( stateName ) ) )
 		
 		return this
 	}
@@ -164,6 +164,17 @@ describe( `Dashing`, () => {
 			} )
 		} )
 		
+		describe( `Alternate way of applying multiple states`, () => {
+			const made = new Dashing()
+				.define( SomeClass, _ => [ "batman", "robin" ] )
+				.registerState( "defeated", _ => [ undefined, "joker" ] )
+				.registerState( "takenOver", _ => [ "twoface", "scarecrow" ] )
+				.applyState( "defeated", "takenOver" )
+				.make()
+			
+			expect( made.param1 ).toBe( "twoface" )
+			expect( made.param2 ).toBe( "scarecrow" )
+		} )
 		xdescribe( `Normalizing state name`, () => {
 		
 		} )
