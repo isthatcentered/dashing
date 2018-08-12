@@ -55,14 +55,18 @@ class Factory
 	}
 	
 	
-	make(): any
+	make( overrides: seedGenerator = _ => [] ): any
 	{
 		let defaultState = this._seed( this._generator )
 		
-		let state = this._activatedStates.reduce( ( refinedState, state ) => merge(
-			refinedState,
-			state.seed( this._generator ),
-		), defaultState )
+		let state = [
+			...this._activatedStates.map( s => s.seed ),
+			overrides,
+		]
+			.reduce(
+				( state, seed ) => merge( state, seed( this._generator ) ),
+				defaultState,
+			)
 		
 		let instance = new (this._model as any)( ...state )
 		
@@ -280,15 +284,24 @@ describe( `Dashing`, () => {
 			} )
 		} )
 		
+		describe( `Applying overrides`, () => {
+			it( `Should apply overrides on top of default AND states params`, () => {
+				const factory = new Dashing()
+					.define( SomeClass, _ => [ "batman" ] )
+					.registerState( "blah", _ => [ "robin" ] )
+				
+				const made: SomeClass = factory
+					.make( _ => [ "alfred" ] )
+				
+				expect( made.param1 ).toBe( "alfred" )
+			} )
+		} )
+		
 		describe( `Generating multiple instances automatically`, () => {
 			// factory.times(3).create
 		} )
 		
-		describe( `Applying overrides`, () => {
-		
-		} )
-		
-		describe( `Dynamic parametters`, () => {
+		describe( `Using the generator for dynamic data`, () => {
 			describe( `For seeds`, () => {
 			
 			} )
