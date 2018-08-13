@@ -37,13 +37,13 @@ interface FactorySlice
 	factory: Builder,
 }
 
-interface State
+export interface State
 {
 	readonly seed: seedGenerator
 	readonly onCreated: onCreatedCallback
 }
 
-class InstanceState implements State
+export class InstanceState implements State
 {
 	
 	private _seed: seedGenerator
@@ -68,6 +68,9 @@ class InstanceState implements State
 		return this._onCreated
 	}
 }
+// export class CompositeState implements State {
+//
+// }
 
 
 class Builder
@@ -98,25 +101,8 @@ class Builder
 		let made: any[] = []
 		
 		for ( let i = 0; i < this._times; i++ ) {
-			
-			let defaultState = this._defaultState.seed( this._generator )
-			
-			let refactoredState = [ this._defaultState, ...this._activatedStates, new InstanceState( overrides ) ]
-				.reduce( ( accumulatedState: Array<any>, state: State ) => {
-					return merge( accumulatedState, state.seed( this._generator ) )
-				}, [] )
-			
-			
-			let instance = new (this._model as any)( ...refactoredState )
-			
-			let afterCallbacks = this._activatedStates
-				.reduce(
-					( instance, state ) =>
-						state.onCreated( instance, this._generator ) || instance,
-					this._defaultState.onCreated( instance, this._generator ) || instance,
-				)
-			
-			made.push( afterCallbacks )
+
+			made.push( this._make( overrides ) )
 		}
 		
 		this.reset()
@@ -160,6 +146,24 @@ class Builder
 		return this
 	}
 	
+	
+	private _make( overrides: seedGenerator )
+	{
+		let state = [ this._defaultState, ...this._activatedStates, new InstanceState( overrides ) ]
+			.reduce( ( accumulatedState: Array<any>, state: State ) => {
+				return merge( accumulatedState, state.seed( this._generator ) )
+			}, [] )
+		
+		
+		let instance = new (this._model as any)( ...state )
+
+		return this._activatedStates
+			.reduce(
+				( instance, state ) =>
+					state.onCreated( instance, this._generator ) || instance,
+				this._defaultState.onCreated( instance, this._generator ) || instance,
+			)
+	}
 	
 	private _getState( stateName: string )
 	{
