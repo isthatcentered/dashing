@@ -28,7 +28,7 @@ class SomeClass
 
 export type seedGenerator = ( generator ) => any[]
 
-export type onCreatedCallback = ( object: any ) => any | void
+export type onCreatedCallback = ( instance: any, generator: any ) => any | void
 
 
 interface FactorySlice
@@ -79,8 +79,8 @@ class Factory
 			let afterCallbacks = this._activatedStates
 				.reduce(
 					( instance, state ) =>
-						state.onCreated( instance ) || instance,
-					this._onCreated( instance ) || instance,
+						state.onCreated( instance, this._generator ) || instance,
+					this._onCreated( instance, this._generator ) || instance,
 				)
 			
 			made.push( afterCallbacks )
@@ -288,7 +288,7 @@ describe( `Dashing`, () => {
 						.define( SomeClass, _ => [], onCreatedCallback )
 						.make()
 					
-					expect( onCreatedCallback ).toHaveBeenCalledWith( made )
+					expect( onCreatedCallback.mock.calls[ 0 ][ 0 ] ).toBe( made )
 					expect( made ).toBeInstanceOf( SomeClass )
 					expect( made.getStuff() ).toBe( "alfred" )
 				} ) )
@@ -440,10 +440,14 @@ describe( `Dashing`, () => {
 						
 						const factory: Factory = makeDashing( GENERATOR )
 							.define( SomeClass, _ => [] )
-							.registerState("withgenerator", generator => [ generator.someNumber(), generator.someString() ])
+						
+						factory.registerState( "withgenerator", generator => [
+							generator.someNumber(),
+							generator.someString(),
+						] )
 						
 						const made: SomeClass = factory
-							.applyState("withgenerator")
+							.applyState( "withgenerator" )
 							.make()
 						
 						expect( made.param1 ).toBe( GENERATOR.someNumber() )
@@ -457,10 +461,10 @@ describe( `Dashing`, () => {
 							.define( SomeClass, _ => [] )
 						
 						const made: SomeClass = factory
-							.make(generator => [
+							.make( generator => [
 								generator.someNumber(),
 								generator.someString(),
-							])
+							] )
 						
 						expect( made.param1 ).toBe( GENERATOR.someNumber() )
 						expect( made.param2 ).toBe( GENERATOR.someString() )
@@ -470,16 +474,42 @@ describe( `Dashing`, () => {
 			describe( `For onCreated callback`, () => {
 				
 				describe( `default`, () => {
-				
+					it( `Should provide the generator as second argument`, () => {
+						
+						const factory: Factory = makeDashing( GENERATOR )
+							.define(
+								SomeClass,
+								_ => [],
+								( instance: SomeClass, generator ) =>
+									instance.setStuff( generator.someString() ),
+							)
+						
+						const made: SomeClass = factory
+							.make()
+						
+						expect( made.getStuff() ).toBe( GENERATOR.someString() )
+					} )
 				} )
 				
-				describe( `States`, () => {
-				
-				} )
-			} )
-			
-			describe( `When creating multiple instances`, () => {
-			
+				describe( `States`, () =>
+					it( `Should provide the generator as second argument`, () => {
+						
+						const factory: Factory = makeDashing( GENERATOR )
+							.define( SomeClass, _ => [] )
+						
+						factory.registerState( "breakfast", _ => [],
+							( instance: SomeClass, generator ) => {
+								instance.setStuff( generator.someString() )
+							},
+						)
+						
+						const made: SomeClass = factory
+							.applyState( "breakfast" )
+							.make()
+						
+						
+						expect( made.getStuff() ).toBe( GENERATOR.someString() )
+					} ) )
 			} )
 		} )
 	} )
