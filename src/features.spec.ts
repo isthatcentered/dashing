@@ -95,24 +95,19 @@ class Builder
 	make( overrides: seedGenerator = _ => [] ): any
 	{
 		
-		let _overrides = new InstanceState( overrides )
-		
 		let made: any[] = []
 		
 		for ( let i = 0; i < this._times; i++ ) {
 			
 			let defaultState = this._defaultState.seed( this._generator )
 			
-			let state = [
-				...this._activatedStates.map( s => s.seed ),
-				overrides,
-			]
-				.reduce(
-					( accumulatedState: Array<any>, seed ) => merge( accumulatedState, seed( this._generator ) ),
-					defaultState,
-				)
+			let refactoredState = [ this._defaultState, ...this._activatedStates, new InstanceState( overrides ) ]
+				.reduce( ( accumulatedState: Array<any>, state: State ) => {
+					return merge( accumulatedState, state.seed( this._generator ) )
+				}, [] )
 			
-			let instance = new (this._model as any)( ...state )
+			
+			let instance = new (this._model as any)( ...refactoredState )
 			
 			let afterCallbacks = this._activatedStates
 				.reduce(
