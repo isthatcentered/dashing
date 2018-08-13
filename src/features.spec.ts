@@ -37,17 +37,23 @@ interface FactorySlice
 	factory: Builder,
 }
 
-class State
+interface State
+{
+	readonly seed: seedGenerator
+	readonly onCreated: onCreatedCallback
+}
+
+class InstanceState implements State
 {
 	
 	private _seed: seedGenerator
 	private _onCreated: onCreatedCallback
 	
 	
-	constructor( seed: seedGenerator, onCreated: onCreatedCallback )
+	constructor( seed: seedGenerator, onCreated?: onCreatedCallback )
 	{
 		this._seed = seed
-		this._onCreated = onCreated
+		this._onCreated = onCreated || (() => undefined)
 	}
 	
 	
@@ -66,38 +72,43 @@ class State
 
 class Builder
 {
+	
+	private _defaultState: InstanceState
+	
+	
 	private _generator: any
 	private _model: Function
-	private _seed: seedGenerator
 	private _states: { [ name: string ]: State } = {}
 	private _activatedStates: Array<State> = []
-	private _onCreated: onCreatedCallback
 	private _times: number = 1
 	
 	
 	constructor( generator: any, model: Function, seed: seedGenerator, onCreated?: onCreatedCallback )
 	{
+		this._defaultState = new InstanceState( seed, onCreated )
+		
 		this._model = model
-		this._seed = seed
-		this._onCreated = onCreated || (( object ) => object)
 		this._generator = generator
 	}
 	
 	
 	make( overrides: seedGenerator = _ => [] ): any
 	{
+		
+		let _overrides = new InstanceState( overrides )
+		
 		let made: any[] = []
 		
 		for ( let i = 0; i < this._times; i++ ) {
 			
-			let defaultState = this._seed( this._generator )
+			let defaultState = this._defaultState.seed( this._generator )
 			
 			let state = [
 				...this._activatedStates.map( s => s.seed ),
 				overrides,
 			]
 				.reduce(
-					( state, seed ) => merge( state, seed( this._generator ) ),
+					( accumulatedState: Array<any>, seed ) => merge( accumulatedState, seed( this._generator ) ),
 					defaultState,
 				)
 			
@@ -107,7 +118,7 @@ class Builder
 				.reduce(
 					( instance, state ) =>
 						state.onCreated( instance, this._generator ) || instance,
-					this._onCreated( instance, this._generator ) || instance,
+					this._defaultState.onCreated( instance, this._generator ) || instance,
 				)
 			
 			made.push( afterCallbacks )
@@ -123,7 +134,7 @@ class Builder
 	
 	registerState( stateName: string, seed: seedGenerator, onCreated?: onCreatedCallback ): this
 	{
-		this._states[ stateName ] = { seed, onCreated: onCreated || (() => undefined) }
+		this._states[ stateName ] = new InstanceState( seed, onCreated )
 		
 		return this
 	}
