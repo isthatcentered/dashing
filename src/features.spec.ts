@@ -113,6 +113,7 @@ class Factory
 	reset()
 	{
 		this._activatedStates = []
+		this._times = 1
 	}
 	
 	
@@ -360,23 +361,66 @@ describe( `Dashing`, () => {
 			} )
 			
 			it( `Should reset the "times" count after make for next object`, () => {
-				expect( true ).toBe( false )
-			
+				
+				const factory: Factory = new Dashing()
+					.define( SomeClass, _ => [] )
+				
+				factory.times( 3 )
+				
+				const first: Array<SomeClass> = factory
+					.make()
+				
+				const second = factory.make()
+				
+				expect( first.length ).toBe( 3 )
+				expect( second ).toBeInstanceOf( SomeClass )
 			} )
 			
 			it( `Should still apply defaults, overrides, and callbacks to each one`, () => {
-				expect( true ).toBe( false )
 				
+				const factory: Factory = new Dashing()
+					.define( SomeClass, _ => [ "batman", "robin" ] )
+					.registerState( "breakfast", _ => [ undefined, undefined, "batgirl" ], o => {
+						o.setStuff( "waffles" )
+					} )
+				
+				const made: Array<SomeClass> = factory
+					.times( 3 )
+					.applyState( "breakfast" )
+					.make( _ => [ "alfred" ] )
+				
+				made.forEach( item => {
+					expect( item.param1 ).toBe( "alfred" )
+					expect( item.param2 ).toBe( "robin" )
+					expect( item.getStuff() ).toBe( "waffles" )
+				} )
 			} )
 		} )
 		
 		describe( `Using the generator for dynamic data`, () => {
 			describe( `For seeds`, () => {
-			
+				describe( `Default`, () => {
+				
+				} )
+				
+				describe( `State`, () => {
+				
+				} )
+				
+				describe( `Overrides`, () => {
+				
+				} )
 			} )
 			
 			describe( `For onCreated callback`, () => {
 			
+				describe( `default`, () => {
+				
+				} )
+				
+				describe( `States`, () => {
+				
+				} )
 			} )
 			
 			describe( `When creating multiple instances`, () => {
