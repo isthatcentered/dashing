@@ -50,22 +50,21 @@ export class CompositeState implements State
 	
 	get onCreated()
 	{
-		return ( instance, generator ) => this._states
-			.map( state => state.onCreated )
-			.reduce( ( acc, onCreated ) =>
-				onCreated( instance, generator ) || instance, instance )
+		return ( instance, generator ) =>
+			this._states
+				.map( state => state.onCreated )
+				.reduce( ( mutatedInstance, onCreated ) =>
+					onCreated( mutatedInstance, generator ) || mutatedInstance, instance )
 	}
 	
 	
 	get seed()
 	{
-		return ( generator ) => {
-			
-			return this._states
+		return ( generator ) =>
+			this._states
 				.map( state => state.seed )
 				.reduce( ( acc, seed ) =>
 					merge( acc, seed( generator ) ), [] )
-		}
 	}
 	
 }

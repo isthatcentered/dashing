@@ -1,5 +1,4 @@
-import * as merge from "lodash.merge"
-import { InstanceState, State } from "./State"
+import { CompositeState, InstanceState, State } from "./State"
 
 
 
@@ -48,7 +47,7 @@ export class Builder
 	private _generator: any
 	private _model: Function
 	private _states: { [ name: string ]: State } = {}
-	private _activatedStates: Array<State> = []
+	private _activatedStates!: State
 	private _times: number = 1
 	
 	
@@ -66,7 +65,7 @@ export class Builder
 	
 	make( overrides: seedGenerator = _ => [] ): any
 	{
-		this._activateStateForBuild(new InstanceState( overrides ))
+		this._activateStateForBuild( new InstanceState( overrides ) )
 		
 		let made: any[] = []
 		
@@ -94,7 +93,7 @@ export class Builder
 	applyState( ...states: Array<string> )
 	{
 		states.forEach( stateName =>
-			this._activatedStates.push( this._getState( stateName ) ) )
+			this._activateStateForBuild( this._getState( stateName ) ) )
 		
 		return this
 	}
@@ -102,10 +101,9 @@ export class Builder
 	
 	reset()
 	{
-		this._activatedStates = []
+		this._activatedStates = new CompositeState( this._defaultState )
 		
-		this._activateStateForBuild(this._defaultState)
-
+		
 		this._times = 1
 	}
 	
@@ -122,35 +120,15 @@ export class Builder
 	
 	private _activateStateForBuild( state: State ): void
 	{
-		this._activatedStates.push( state )
+		this._activatedStates = new CompositeState( this._activatedStates, state )
 	}
 	
 	
 	private _make()
 	{
-		let instance = new (this._model as any)( ...this._buildInstanceParams() )
+		let instance = new (this._model as any)( ...this._activatedStates.seed( this._generator ) )
 		
-		return this._applyStatesCallbacksTo( instance )
-	}
-	
-	
-	private _applyStatesCallbacksTo( instance: any )
-	{
-		return [ ...this._activatedStates ]
-			.map( state => state.onCreated )
-			.reduce(
-				( instance, onCreated ) =>
-					onCreated( instance, this._generator ) || instance, // Use callback's returned object or use mutated instance
-				instance,
-			)
-	}
-	
-	
-	private _buildInstanceParams(): Array<any>
-	{
-		return [ ...this._activatedStates ]
-			.reduce( ( acc: Array<any>, state: State ) =>
-				merge( acc, state.seed( this._generator ) ), [] )
+		return this._activatedStates.onCreated( instance, this._generator )
 	}
 	
 	

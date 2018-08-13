@@ -75,14 +75,17 @@ describe( `CompositeState`, () => {
 			
 			it( `Should return object returned to onCreated if any`, () => {
 				
-				const instance = { setBreakfast: jest.fn() }
+				const firstOncreated = jest.fn().mockImplementation( ( instance, _ ) => "🍩" )
+				const secondOncreated = jest.fn().mockImplementation( ( instance, _ ) => "🥞" )
 				
-				const state = new InstanceState( _ => [], ( instance, _ ) => "😅" )
+				const result = new CompositeState( new InstanceState( _ => [], firstOncreated ), new InstanceState( _ => [], secondOncreated ) )
+					.onCreated( "instance", "generator" )
 				
-				const result = new CompositeState( state )
-					.onCreated( instance, {} )
+				expect( firstOncreated ).toHaveBeenCalledWith( "instance", "generator" )
 				
-				expect( result ).toBe( "😅" )
+				expect( secondOncreated ).toHaveBeenCalledWith( "🍩", "generator" )
+				
+				expect( result ).toBe( "🥞" )
 			} )
 			
 			it( `Should pass generator to each callback`, () => {
