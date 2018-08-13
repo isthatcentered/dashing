@@ -1,4 +1,4 @@
-import { merge } from "lodash"
+import * as merge from "lodash.merge"
 import { onCreatedCallback, seedGenerator } from "./features.spec"
 
 
@@ -69,3 +69,4 @@ export class CompositeState implements State
 	}
 	
 }
+

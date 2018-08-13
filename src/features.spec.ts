@@ -1,4 +1,4 @@
-import { merge } from "lodash"
+import * as merge from "lodash.merge"
 import { InstanceState, State } from "./State"
 
 
