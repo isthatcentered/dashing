@@ -68,6 +68,7 @@ export class InstanceState implements State
 		return this._onCreated
 	}
 }
+
 // export class CompositeState implements State {
 //
 // }
@@ -98,11 +99,13 @@ class Builder
 	make( overrides: seedGenerator = _ => [] ): any
 	{
 		
+		this._activatedStates.push( new InstanceState( overrides ) )
+		
 		let made: any[] = []
 		
 		for ( let i = 0; i < this._times; i++ ) {
-
-			made.push( this._make( overrides ) )
+			
+			made.push( this._make( ) )
 		}
 		
 		this.reset()
@@ -147,23 +150,33 @@ class Builder
 	}
 	
 	
-	private _make( overrides: seedGenerator )
+	private _make()
 	{
-		let state = [ this._defaultState, ...this._activatedStates, new InstanceState( overrides ) ]
-			.reduce( ( accumulatedState: Array<any>, state: State ) => {
-				return merge( accumulatedState, state.seed( this._generator ) )
-			}, [] )
+		let instance = new (this._model as any)( ...this._buildInstanceParams() )
 		
-		
-		let instance = new (this._model as any)( ...state )
-
-		return this._activatedStates
+		return this._applyStatesCallbacksTo( instance )
+	}
+	
+	
+	private _applyStatesCallbacksTo( instance: any )
+	{
+		return [ this._defaultState, ...this._activatedStates ]
+			.map( state => state.onCreated )
 			.reduce(
-				( instance, state ) =>
-					state.onCreated( instance, this._generator ) || instance,
-				this._defaultState.onCreated( instance, this._generator ) || instance,
+				( instance, onCreated ) =>
+					onCreated( instance, this._generator ) || instance, // Use callback's returned object or use mutated instance
+				instance,
 			)
 	}
+	
+	
+	private _buildInstanceParams(): Array<any>
+	{
+		return [ this._defaultState, ...this._activatedStates ]
+			.reduce( ( acc: Array<any>, state: State ) =>
+				merge( acc, state.seed( this._generator ) ), [] )
+	}
+	
 	
 	private _getState( stateName: string )
 	{
