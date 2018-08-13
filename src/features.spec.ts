@@ -53,6 +53,7 @@ class Factory
 		this._model = model
 		this._seed = seed
 		this._onCreated = onCreated || (( object ) => object)
+		this._generator = generator
 	}
 	
 	
@@ -145,10 +146,17 @@ export class Dashing
 	private _generator: any = {}
 	
 	
+	
+	constructor( _generator: any )
+	{
+		this._generator = _generator
+	}
+	
+	
 	define( model: Function, seed: seedGenerator, onCreated?: onCreatedCallback ): Factory
 	{
 		
-		const factory = new Factory( {}, model, seed, onCreated )
+		const factory = new Factory( this._generator, model, seed, onCreated )
 		
 		this._factories.push( { model, factory } )
 		
@@ -175,6 +183,13 @@ export class Dashing
 	}
 }
 
+
+function makeDashing( generator = {} )
+{
+	return new Dashing( generator )
+}
+
+
 describe( `Dashing`, () => {
 	
 	describe( `Making an item`, () => {
@@ -183,7 +198,7 @@ describe( `Dashing`, () => {
 			
 			it( `Should apply given defaults as instance's constructor params`, () => {
 				
-				const made: SomeClass = new Dashing()
+				const made: SomeClass = makeDashing()
 					.define( SomeClass, _ => [ "batman", "robin" ] )
 					.make()
 				
@@ -197,7 +212,7 @@ describe( `Dashing`, () => {
 			
 			it( `Should return model constructed with state override`, () => {
 				
-				const factory: Factory = new Dashing()
+				const factory: Factory = makeDashing()
 					.define( SomeClass, _ => [ "batman", "robin" ] )
 					.registerState( "defeated", _ => [ undefined, "joker" ] )
 				
@@ -211,7 +226,7 @@ describe( `Dashing`, () => {
 			
 			it( `Should override default state in order of applyance`, () => {
 				
-				const factory: Factory = new Dashing()
+				const factory: Factory = makeDashing()
 					.define( SomeClass, _ => [ "batman", "robin" ] )
 					.registerState( "defeated", _ => [ undefined, "joker" ] )
 					.registerState( "takenOver", _ => [ "twoface", "scarecrow" ] )
@@ -227,7 +242,7 @@ describe( `Dashing`, () => {
 			
 			it( `Should allow me to apply multiple states at once for convenience`, () => {
 				
-				const factory: Factory = new Dashing()
+				const factory: Factory = makeDashing()
 					.define( SomeClass, _ => [ "batman", "robin" ] )
 					.registerState( "defeated", _ => [ undefined, "joker" ] )
 					.registerState( "takenOver", _ => [ "twoface", "scarecrow" ] )
@@ -242,7 +257,7 @@ describe( `Dashing`, () => {
 			
 			it( `Should not inherit applied states of previous item on creation`, () => {
 				
-				const factory = new Dashing()
+				const factory = makeDashing()
 					.define( SomeClass, _ => [ "bruce" ] )
 					.registerState( "meh", _ => [ "alfred" ] )
 				
@@ -260,7 +275,6 @@ describe( `Dashing`, () => {
 			} )
 		} )
 		
-		
 		describe( `After creation hook`, () => {
 			
 			describe( `Default for every new instance`, () =>
@@ -270,7 +284,7 @@ describe( `Dashing`, () => {
 						made.setStuff( "alfred" )
 					} )
 					
-					const made: SomeClass = new Dashing()
+					const made: SomeClass = makeDashing()
 						.define( SomeClass, _ => [], onCreatedCallback )
 						.make()
 					
@@ -282,7 +296,7 @@ describe( `Dashing`, () => {
 			describe( `Per state`, () =>
 				it( `Should apply each state's oncreated callback in order of applyance`, () => {
 					
-					const factory: Factory = new Dashing()
+					const factory: Factory = makeDashing()
 						.define( SomeClass, _ => [], o => {
 							o.setStuff( "alfred" )
 						} )
@@ -312,7 +326,7 @@ describe( `Dashing`, () => {
 			describe( `Returning an object to onCreated callback`, () => {
 				it( `Should use the returned object for following processes`, () => {
 					
-					const factory: Factory = new Dashing()
+					const factory: Factory = makeDashing()
 						.define( SomeClass, _ => [], o => "batman" )
 						.registerState( "blah", () => [], o => {
 							
@@ -335,7 +349,7 @@ describe( `Dashing`, () => {
 		describe( `Applying overrides`, () =>
 			it( `Should apply overrides on top of default AND states params`, () => {
 				
-				const factory = new Dashing()
+				const factory = makeDashing()
 					.define( SomeClass, _ => [ "batman" ] )
 					.registerState( "blah", _ => [ "robin" ] )
 				
@@ -348,7 +362,7 @@ describe( `Dashing`, () => {
 		describe( `Generating multiple instances automatically`, () => {
 			it( `Should generate the desired number of instance`, () => {
 				
-				const factory: Factory = new Dashing()
+				const factory: Factory = makeDashing()
 					.define( SomeClass, _ => [] )
 				
 				const made: Array<SomeClass> = factory
@@ -362,7 +376,7 @@ describe( `Dashing`, () => {
 			
 			it( `Should reset the "times" count after make for next object`, () => {
 				
-				const factory: Factory = new Dashing()
+				const factory: Factory = makeDashing()
 					.define( SomeClass, _ => [] )
 				
 				factory.times( 3 )
@@ -378,7 +392,7 @@ describe( `Dashing`, () => {
 			
 			it( `Should still apply defaults, overrides, and callbacks to each one`, () => {
 				
-				const factory: Factory = new Dashing()
+				const factory: Factory = makeDashing()
 					.define( SomeClass, _ => [ "batman", "robin" ] )
 					.registerState( "breakfast", _ => [ undefined, undefined, "batgirl" ], o => {
 						o.setStuff( "waffles" )
@@ -398,22 +412,63 @@ describe( `Dashing`, () => {
 		} )
 		
 		describe( `Using the generator for dynamic data`, () => {
+			
+			let GENERATOR: any
+			beforeEach( () => {
+				GENERATOR = {
+					someNumber: () => 5,
+					someString: () => "pancakes",
+				}
+			} )
+			
 			describe( `For seeds`, () => {
-				describe( `Default`, () => {
+				describe( `Default`, () =>
+					it( `Should provide the generator to the seed function`, () => {
+						
+						const factory: Factory = makeDashing( GENERATOR )
+							.define( SomeClass, generator => [ generator.someNumber(), generator.someString() ] )
+						
+						const made: SomeClass = factory
+							.make()
+						
+						expect( made.param1 ).toBe( GENERATOR.someNumber() )
+						expect( made.param2 ).toBe( GENERATOR.someString() )
+					} ) )
 				
-				} )
+				describe( `State`, () =>
+					it( `Should provide the generator to the seed function`, () => {
+						
+						const factory: Factory = makeDashing( GENERATOR )
+							.define( SomeClass, _ => [] )
+							.registerState("withgenerator", generator => [ generator.someNumber(), generator.someString() ])
+						
+						const made: SomeClass = factory
+							.applyState("withgenerator")
+							.make()
+						
+						expect( made.param1 ).toBe( GENERATOR.someNumber() )
+						expect( made.param2 ).toBe( GENERATOR.someString() )
+					} ) )
 				
-				describe( `State`, () => {
-				
-				} )
-				
-				describe( `Overrides`, () => {
-				
-				} )
+				describe( `Overrides`, () =>
+					it( `Should provide the generator to the seed function`, () => {
+						
+						const factory: Factory = makeDashing( GENERATOR )
+							.define( SomeClass, _ => [] )
+						
+						const made: SomeClass = factory
+							.make(generator => [
+								generator.someNumber(),
+								generator.someString(),
+							])
+						
+						expect( made.param1 ).toBe( GENERATOR.someNumber() )
+						expect( made.param2 ).toBe( GENERATOR.someString() )
+					} ) )
 			} )
 			
 			describe( `For onCreated callback`, () => {
-			
+				
 				describe( `default`, () => {
 				
 				} )
