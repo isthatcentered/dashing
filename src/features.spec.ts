@@ -49,6 +49,13 @@ export class BuildConfig
 	{
 		this._default = defaultState
 	}
+	
+	reset() {}
+	
+	addStep() {
+	
+	}
+	setTimes() {}
 }
 
 
