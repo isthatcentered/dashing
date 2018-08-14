@@ -1,5 +1,6 @@
 import { BuildStepCompositeState, BuildStepState, State } from "./State"
-import { onCreatedCallback, seedGenerator } from "./features.spec"
+import { seedFactory } from "./Dashing"
+import { onCreatedCallback } from "./Dashing"
 
 
 
@@ -117,7 +118,7 @@ describe( `CompositeState`, () => {
 } )
 
 
-function makeState( seed?: seedGenerator, callback?: onCreatedCallback ): State
+function makeState( seed?: seedFactory, callback?: onCreatedCallback ): State
 {
 	return {
 		applyOnCreated: callback || (( i, g ) => undefined),

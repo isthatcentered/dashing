@@ -1,5 +1,5 @@
-import { BuildStepCompositeState, BuildStepState, State } from "./State"
-import { BuildConfig, BuilderBuildConfig } from "./BuildConfig"
+import { Builder } from "./ModelBuilder"
+import { Dashing } from "./Dashing"
 
 
 
@@ -23,165 +23,6 @@ class SomeClass
 	getStuff()
 	{
 		return this._stuff
-	}
-}
-
-
-export type seedGenerator = ( generator ) => any[]
-
-export type onCreatedCallback = ( instance: any, generator: any ) => any | void
-
-
-export interface FactorySlice
-{
-	model: Function,
-	factory: Builder,
-}
-
-
-export class Builder
-{
-	
-	private _generator: any
-	private _model: Function
-	private _defaultState: State
-	private _registeredStates: { [ name: string ]: State } = {}
-	
-	private _buildConfig!: BuildConfig<State>
-	
-	
-	constructor( generator: any, model: Function, seed: seedGenerator, onCreated?: onCreatedCallback )
-	{
-		this._defaultState = new BuildStepState( seed, onCreated )
-		
-		this._buildConfig = new BuilderBuildConfig( this._defaultState )
-		
-		this._model = model
-		
-		this._generator = generator
-		
-		this.reset()
-	}
-	
-	
-	make( overrides: seedGenerator = _ => [] ): any
-	{
-		this._activateStateForBuild( new BuildStepState( overrides ) )
-		
-		let made: any[] = []
-		
-		for ( let i = 0; i < this._buildConfig.getTimes(); i++ ) {
-			
-			made.push( this._make() )
-		}
-		
-		this.reset()
-		
-		return made.length > 1 ?
-		       made :
-		       made.pop()
-	}
-	
-	
-	registerState( stateName: string, seed: seedGenerator, onCreated?: onCreatedCallback ): this
-	{
-		this._registeredStates[ stateName ] = new BuildStepState( seed, onCreated )
-		
-		return this
-	}
-	
-	
-	applyState( ...states: Array<string> )
-	{
-		states.forEach( stateName =>
-			this._activateStateForBuild( this._getState( stateName ) ) )
-		
-		return this
-	}
-	
-	
-	reset()
-	{
-		this._buildConfig.reset()
-	}
-	
-	
-	times( times: number ): this
-	{
-		this._buildConfig.setTimes( times )
-		
-		return this
-	}
-	
-	
-	private _make()
-	{
-		const state = new BuildStepCompositeState( ...this._buildConfig.getSteps() )
-		
-		let instance = new (this._model as any)( ...state.makeSeed( this._generator ) )
-		
-		return state.applyOnCreated( instance, this._generator )
-	}
-	
-	
-	private _activateStateForBuild( state: State ): void
-	{
-		this._buildConfig.addStep( state )
-	}
-	
-	
-	private _getState( stateName: string )
-	{
-		const state = this._registeredStates[ stateName ]
-		
-		if ( !state )
-			throw new Error( `No state registered under name ${stateName}` )
-		
-		return state
-	}
-}
-
-export class Dashing
-{
-	
-	protected _factories: Array<FactorySlice> = []
-	private _generator: any = {}
-	
-	
-	
-	constructor( _generator: any )
-	{
-		this._generator = _generator
-	}
-	
-	
-	define( model: Function, seed: seedGenerator, onCreated?: onCreatedCallback ): Builder
-	{
-		
-		const factory = new Builder( this._generator, model, seed, onCreated )
-		
-		this._factories.push( { model, factory } )
-		
-		return factory
-	}
-	
-	
-	getFactory( model: Function )
-	{
-		return this._getFactorySlice( model ).factory
-	}
-	
-	
-	private _getFactorySlice( model ): FactorySlice
-	{
-		const slice = this._factories
-			.filter( fs => fs.model === model )
-			.pop()
-		
-		if ( !slice )
-			throw new Error( `No registered factory for model ${model}` )
-		
-		return slice
 	}
 }
 
@@ -511,7 +352,7 @@ describe( `Dashing`, () => {
 	} )
 	
 	
-	// @todo: not passing a seedGenerator or passing an array
+	// @todo: not passing a seedFactory or passing an array
 	// @todo: Should errors throw to break process or this is not what we want
 	// @todo: calling unregistered state
 	// @todo: normalizing state name
