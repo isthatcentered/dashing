@@ -44,23 +44,20 @@ export class Builder
 	
 	private _generator: any
 	private _model: Function
-	private _defaultState: BuildStepState
+	private _defaultState: State
 	private _registeredStates: { [ name: string ]: State } = {}
 	
 	private _buildConfig!: BuildConfig<State>
-	private _activatedStates: CompositeState = new BuildStepCompositeState()
-	private _times: number = 1
-	
 	
 	constructor( generator: any, model: Function, seed: seedGenerator, onCreated?: onCreatedCallback )
 	{
 		this._defaultState = new BuildStepState( seed, onCreated )
 		
+		this._buildConfig = new BuilderBuildConfig(this._defaultState)
+		
 		this._model = model
 		
 		this._generator = generator
-		
-		this._buildConfig = new BuilderBuildConfig(this._defaultState)
 		
 		this.reset()
 	}
@@ -104,14 +101,7 @@ export class Builder
 	
 	reset()
 	{
-		
 		this._buildConfig.reset()
-		
-		this._activatedStates.empty()
-		
-		this._activatedStates.add( this._defaultState )
-		
-		this._times = 1
 	}
 	
 	
@@ -125,15 +115,17 @@ export class Builder
 	
 	private _make()
 	{
-		let instance = new (this._model as any)( ...this._activatedStates.makeSeed( this._generator ) )
+		const state = new BuildStepCompositeState(...this._buildConfig.getSteps())
 		
-		return this._activatedStates.applyOnCreated( instance, this._generator )
+		let instance = new (this._model as any)( ...state.makeSeed( this._generator ) )
+		
+		return state.applyOnCreated( instance, this._generator )
 	}
 	
 	
 	private _activateStateForBuild( state: State ): void
 	{
-		this._activatedStates.add( state )
+		this._buildConfig.addStep(state)
 	}
 	
 	
