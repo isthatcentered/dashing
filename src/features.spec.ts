@@ -37,6 +37,20 @@ export interface FactorySlice
 	factory: Builder,
 }
 
+export class BuildConfig
+{
+	
+	private _default: State
+	private _states = []
+	private _times: number = 1
+	
+	
+	constructor( defaultState: State )
+	{
+		this._default = defaultState
+	}
+}
+
 
 export class Builder
 {
@@ -94,7 +108,7 @@ export class Builder
 	{
 		states.forEach( stateName =>
 			this._activateStateForBuild( this._getState( stateName ) ) )
-
+		
 		return this
 	}
 	
@@ -129,7 +143,7 @@ export class Builder
 	
 	private _activateStateForBuild( state: State ): void
 	{
-		this._activatedStates.add(state)
+		this._activatedStates.add( state )
 	}
 	
 	
