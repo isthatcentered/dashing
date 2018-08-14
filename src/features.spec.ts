@@ -1,4 +1,4 @@
-import { InstanceCompositeState, InstanceState, State } from "./State"
+import { BuildStepCompositeState, BuildStepState, State } from "./State"
 
 
 
@@ -41,7 +41,7 @@ export interface FactorySlice
 export class Builder
 {
 	
-	private _defaultState: InstanceState
+	private _defaultState: BuildStepState
 	
 	
 	private _generator: any
@@ -53,7 +53,7 @@ export class Builder
 	
 	constructor( generator: any, model: Function, seed: seedGenerator, onCreated?: onCreatedCallback )
 	{
-		this._defaultState = new InstanceState( seed, onCreated )
+		this._defaultState = new BuildStepState( seed, onCreated )
 		
 		this._model = model
 		
@@ -65,7 +65,7 @@ export class Builder
 	
 	make( overrides: seedGenerator = _ => [] ): any
 	{
-		this._activateStateForBuild( new InstanceState( overrides ) )
+		this._activateStateForBuild( new BuildStepState( overrides ) )
 		
 		let made: any[] = []
 		
@@ -84,7 +84,7 @@ export class Builder
 	
 	registerState( stateName: string, seed: seedGenerator, onCreated?: onCreatedCallback ): this
 	{
-		this._states[ stateName ] = new InstanceState( seed, onCreated )
+		this._states[ stateName ] = new BuildStepState( seed, onCreated )
 		
 		return this
 	}
@@ -101,7 +101,7 @@ export class Builder
 	
 	reset()
 	{
-		this._activatedStates = new InstanceCompositeState( this._defaultState )
+		this._activatedStates = new BuildStepCompositeState( this._defaultState )
 		
 		
 		this._times = 1
@@ -120,7 +120,7 @@ export class Builder
 	
 	private _activateStateForBuild( state: State ): void
 	{
-		this._activatedStates = new InstanceCompositeState( this._activatedStates, state )
+		this._activatedStates = new BuildStepCompositeState( this._activatedStates, state )
 	}
 	
 	

@@ -1,4 +1,4 @@
-import { InstanceCompositeState, InstanceState, State } from "./State"
+import { BuildStepCompositeState, BuildStepState, State } from "./State"
 import { onCreatedCallback, seedGenerator } from "./features.spec"
 
 
@@ -9,14 +9,14 @@ describe( `CompositeState`, () => {
 	describe( `No states passed on creation`, () => {
 		it( `Should return a blank seed`, () => {
 			
-			const composite = new InstanceCompositeState()
+			const composite = new BuildStepCompositeState()
 			
 			expect( composite.makeSeed( {} ) ).toEqual( [] )
 		} )
 		
 		it( `Should return instance after callback`, () => {
 			
-			const composite = new InstanceCompositeState()
+			const composite = new BuildStepCompositeState()
 			
 			expect( composite.applyOnCreated( "instance", {} ) ).toBe( "instance" )
 		} )
@@ -38,7 +38,7 @@ describe( `CompositeState`, () => {
 				const firstState  = makeState( _ => [ "waffles", "pancakes" ] ),
 				      secondState = makeState( _ => [ undefined, "syrup" ] )
 				
-				const composite = new InstanceCompositeState( firstState, secondState )
+				const composite = new BuildStepCompositeState( firstState, secondState )
 				
 				expect( composite.makeSeed( {} ) ).toEqual( [ "waffles", "syrup" ] )
 			} )
@@ -48,7 +48,7 @@ describe( `CompositeState`, () => {
 				const firstState  = makeState( g => [ g.someString(), "pancakes" ] ),
 				      secondState = makeState( g => [ undefined, g.someNumber() ] )
 				
-				const composite = new InstanceCompositeState( firstState, secondState )
+				const composite = new BuildStepCompositeState( firstState, secondState )
 				
 				expect( composite.makeSeed( GENERATOR ) ).toEqual( [ GENERATOR.someString(), GENERATOR.someNumber() ] )
 			} )
@@ -66,7 +66,7 @@ describe( `CompositeState`, () => {
 					      instance.setBreakfast( "🥞" )
 				      } )
 				
-				const result = new InstanceCompositeState( firstState, secondState )
+				const result = new BuildStepCompositeState( firstState, secondState )
 					.applyOnCreated( instance, {} )
 				
 				expect( instance.setBreakfast ).toHaveBeenCalledTimes( 2 )
@@ -82,7 +82,7 @@ describe( `CompositeState`, () => {
 					instance.setBreakfast( "waffles" )
 				} )
 				
-				const result = new InstanceCompositeState( state )
+				const result = new BuildStepCompositeState( state )
 					.applyOnCreated( instance, {} )
 				
 				expect( result ).toBe( instance )
@@ -93,7 +93,7 @@ describe( `CompositeState`, () => {
 				const firstOncreated = jest.fn().mockImplementation( ( instance, _ ) => "🍩" )
 				const secondOncreated = jest.fn().mockImplementation( ( instance, _ ) => "🥞" )
 				
-				const result = new InstanceCompositeState( makeState( undefined, firstOncreated ), makeState( undefined, secondOncreated ) )
+				const result = new BuildStepCompositeState( makeState( undefined, firstOncreated ), makeState( undefined, secondOncreated ) )
 					.applyOnCreated( "instance", "generator" )
 				
 				expect( firstOncreated ).toHaveBeenCalledWith( "instance", "generator" )
@@ -107,7 +107,7 @@ describe( `CompositeState`, () => {
 				
 				const state = makeState( undefined, ( instance, _ ) => GENERATOR.someString() )
 				
-				const result = new InstanceCompositeState( state )
+				const result = new BuildStepCompositeState( state )
 					.applyOnCreated( {}, GENERATOR )
 				
 				expect( result ).toBe( GENERATOR.someString() )
@@ -117,7 +117,7 @@ describe( `CompositeState`, () => {
 		describe( `empty()`, () => {
 			it( `Should empty the collection`, () => {
 				
-				const composite = new InstanceCompositeState( makeState( _ => [ "waffles" ] ) )
+				const composite = new BuildStepCompositeState( makeState( _ => [ "waffles" ] ) )
 				
 				expect( composite.makeSeed( {} ) ).toEqual( [ "waffles" ] )
 				
@@ -130,7 +130,7 @@ describe( `CompositeState`, () => {
 		describe( `add()`, () => {
 			it( `Should add passed state to composite `, () => {
 				
-				const composite = new InstanceCompositeState(  )
+				const composite = new BuildStepCompositeState(  )
 				
 				expect( composite.makeSeed( {} ) ).toEqual( [] )
 				

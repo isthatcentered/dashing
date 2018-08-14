@@ -28,7 +28,7 @@ class NullState implements State
 	makeSeed = ( generator ) => []
 }
 
-export class InstanceState implements State
+export class BuildStepState implements State
 {
 	
 	private _seed: seedGenerator
@@ -49,7 +49,7 @@ export class InstanceState implements State
 	
 }
 
-export class InstanceCompositeState implements CompositeState
+export class BuildStepCompositeState implements CompositeState
 {
 	private _states: Array<State> = []
 	
