@@ -37,27 +37,6 @@ export interface FactorySlice
 	factory: Builder,
 }
 
-export class BuildConfig
-{
-	
-	private _default: State
-	private _states = []
-	private _times: number = 1
-	
-	
-	constructor( defaultState: State )
-	{
-		this._default = defaultState
-	}
-	
-	reset() {}
-	
-	addStep() {
-	
-	}
-	setTimes() {}
-}
-
 
 export class Builder
 {
