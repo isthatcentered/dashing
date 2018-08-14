@@ -23,11 +23,15 @@ export interface CompositeState extends State, Composite<State>
 
 class NullState implements State
 {
-	get onCreated() {
-		return (instance, generator) => undefined
+	get onCreated()
+	{
+		return ( instance, generator ) => undefined
 	}
-	get seed() {
-		return (generator) => []
+	
+	
+	get seed()
+	{
+		return ( generator ) => []
 	}
 }
 
@@ -89,15 +93,15 @@ export class InstanceCompositeState implements CompositeState
 	}
 	
 	
-	add( state )
+	add( state: State )
 	{
-	
+		this._states.push( state )
 	}
 	
 	
 	empty()
 	{
-	
+		this._states = []
 	}
 	
 }
