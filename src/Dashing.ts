@@ -1,4 +1,4 @@
-import { ModelBuilder } from "./ModelBuilder"
+import { ModelBuilder } from "./Builder"
 
 
 

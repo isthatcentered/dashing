@@ -16,7 +16,7 @@ export interface BuildConfig<T>
 	getTimes: () => number
 }
 
-export class BuilderBuildConfig implements BuildConfig<State>
+export class ModelBuilderBuildConfig implements BuildConfig<State>
 {
 	
 	private _default: State

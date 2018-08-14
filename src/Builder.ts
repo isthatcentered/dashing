@@ -1,7 +1,6 @@
+import { onCreatedCallback, seedFactory } from "./Dashing"
 import { BuildStepCompositeState, BuildStepState, State } from "./State"
-import { BuildConfig, BuilderBuildConfig } from "./BuildConfig"
-import { seedFactory } from "./Dashing"
-import { onCreatedCallback } from "./Dashing"
+import { BuildConfig, ModelBuilderBuildConfig } from "./BuildConfig"
 
 
 
@@ -34,7 +33,7 @@ export class ModelBuilder implements Builder
 	{
 		this._defaultState = new BuildStepState( seed, onCreated )
 		
-		this._buildConfig = new BuilderBuildConfig( this._defaultState )
+		this._buildConfig = new ModelBuilderBuildConfig( this._defaultState )
 		
 		this._model = model
 		
