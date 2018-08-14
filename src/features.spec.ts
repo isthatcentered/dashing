@@ -1,4 +1,5 @@
 import { BuildStepCompositeState, BuildStepState, CompositeState, State } from "./State"
+import { BuildConfig, BuilderBuildConfig } from "./BuildConfig"
 
 
 
@@ -46,8 +47,8 @@ export class Builder
 	private _defaultState: BuildStepState
 	private _registeredStates: { [ name: string ]: State } = {}
 	
+	private _buildConfig!: BuildConfig<State>
 	private _activatedStates: CompositeState = new BuildStepCompositeState()
-	
 	private _times: number = 1
 	
 	
@@ -59,6 +60,8 @@ export class Builder
 		
 		this._generator = generator
 		
+		this._buildConfig = new BuilderBuildConfig(this._defaultState)
+		
 		this.reset()
 	}
 	
@@ -69,7 +72,7 @@ export class Builder
 		
 		let made: any[] = []
 		
-		for ( let i = 0; i < this._times; i++ ) {
+		for ( let i = 0; i < this._buildConfig.getTimes(); i++ ) {
 			
 			made.push( this._make() )
 		}
@@ -101,6 +104,9 @@ export class Builder
 	
 	reset()
 	{
+		
+		this._buildConfig.reset()
+		
 		this._activatedStates.empty()
 		
 		this._activatedStates.add( this._defaultState )
@@ -109,11 +115,9 @@ export class Builder
 	}
 	
 	
-	times( number: number ): this
+	times( times: number ): this
 	{
-		this._times = number > 0 ?
-		              number :
-		              1 // @todo: unit test for this
+		this._buildConfig.setTimes(times)
 		
 		return this
 	}
