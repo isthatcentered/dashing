@@ -1,4 +1,4 @@
-import { CompositeState, InstanceState, State } from "./State"
+import { InstanceCompositeState, InstanceState, State } from "./State"
 
 
 
@@ -94,14 +94,14 @@ export class Builder
 	{
 		states.forEach( stateName =>
 			this._activateStateForBuild( this._getState( stateName ) ) )
-		
+
 		return this
 	}
 	
 	
 	reset()
 	{
-		this._activatedStates = new CompositeState( this._defaultState )
+		this._activatedStates = new InstanceCompositeState( this._defaultState )
 		
 		
 		this._times = 1
@@ -120,7 +120,7 @@ export class Builder
 	
 	private _activateStateForBuild( state: State ): void
 	{
-		this._activatedStates = new CompositeState( this._activatedStates, state )
+		this._activatedStates = new InstanceCompositeState( this._activatedStates, state )
 	}
 	
 	

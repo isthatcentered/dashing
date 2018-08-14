@@ -4,10 +4,31 @@ import { onCreatedCallback, seedGenerator } from "./features.spec"
 
 
 
+export interface Composite<T>
+{
+	empty: () => void
+	add: ( thing: T ) => void
+}
+
 export interface State
 {
 	readonly seed: seedGenerator
 	readonly onCreated: onCreatedCallback
+}
+
+export interface CompositeState extends State, Composite<State>
+{
+
+}
+
+class NullState implements State
+{
+	get onCreated() {
+		return (instance, generator) => undefined
+	}
+	get seed() {
+		return (generator) => []
+	}
 }
 
 export class InstanceState implements State
@@ -34,17 +55,17 @@ export class InstanceState implements State
 	{
 		return this._onCreated
 	}
+	
 }
 
-export class CompositeState implements State
+export class InstanceCompositeState implements CompositeState
 {
 	private _states: Array<State> = []
 	
 	
-	
 	constructor( ...states: Array<State> )
 	{
-		this._states = states
+		this._states = states || new NullState()
 	}
 	
 	
@@ -65,6 +86,18 @@ export class CompositeState implements State
 				.map( state => state.seed )
 				.reduce( ( acc, seed ) =>
 					merge( acc, seed( generator ) ), [] )
+	}
+	
+	
+	add( state )
+	{
+	
+	}
+	
+	
+	empty()
+	{
+	
 	}
 	
 }
