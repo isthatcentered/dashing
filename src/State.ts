@@ -12,8 +12,8 @@ export interface Composite<T>
 
 export interface State
 {
-	readonly seed: seedGenerator
-	readonly onCreated: onCreatedCallback
+	makeSeed: seedGenerator
+	applyOnCreated: onCreatedCallback
 }
 
 export interface CompositeState extends State, Composite<State>
@@ -23,16 +23,9 @@ export interface CompositeState extends State, Composite<State>
 
 class NullState implements State
 {
-	get onCreated()
-	{
-		return ( instance, generator ) => undefined
-	}
+	applyOnCreated = ( instance, generator ) => undefined
 	
-	
-	get seed()
-	{
-		return ( generator ) => []
-	}
+	makeSeed = ( generator ) => []
 }
 
 export class InstanceState implements State
@@ -49,16 +42,10 @@ export class InstanceState implements State
 	}
 	
 	
-	get seed()
-	{
-		return this._seed
-	}
+	makeSeed = ( generator ) => this._seed( generator )
 	
 	
-	get onCreated()
-	{
-		return this._onCreated
-	}
+	applyOnCreated = ( instance, generator ) => this._onCreated( instance, generator )
 	
 }
 
@@ -73,36 +60,27 @@ export class InstanceCompositeState implements CompositeState
 	}
 	
 	
-	get onCreated()
-	{
-		return ( instance, generator ) =>
-			this._states
-				.map( state => state.onCreated )
-				.reduce( ( mutatedInstance, onCreated ) =>
-					onCreated( mutatedInstance, generator ) || mutatedInstance, instance )
-	}
+	applyOnCreated = ( instance, generator ) =>
+		this._states
+			.reduce(
+				( _instance, state ) =>
+					state.applyOnCreated( _instance, generator ) || _instance,
+				instance,
+			)
 	
 	
-	get seed()
-	{
-		return ( generator ) =>
-			this._states
-				.map( state => state.seed )
-				.reduce( ( acc, seed ) =>
-					merge( acc, seed( generator ) ), [] )
-	}
+	makeSeed = ( generator ) =>
+		this._states
+			.reduce(
+				( seed, state ) =>
+					merge( seed, state.makeSeed( generator ) ),
+				[],
+			)
 	
 	
-	add( state: State )
-	{
-		this._states.push( state )
-	}
+	add = ( state: State ) => this._states.push( state )
 	
 	
-	empty()
-	{
-		this._states = []
-	}
-	
+	empty = () => this._states = []
 }
 

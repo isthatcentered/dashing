@@ -126,9 +126,9 @@ export class Builder
 	
 	private _make()
 	{
-		let instance = new (this._model as any)( ...this._activatedStates.seed( this._generator ) )
+		let instance = new (this._model as any)( ...this._activatedStates.makeSeed( this._generator ) )
 		
-		return this._activatedStates.onCreated( instance, this._generator )
+		return this._activatedStates.applyOnCreated( instance, this._generator )
 	}
 	
 	

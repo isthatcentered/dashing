@@ -11,14 +11,14 @@ describe( `CompositeState`, () => {
 			
 			const composite = new InstanceCompositeState()
 			
-			expect( composite.seed( {} ) ).toEqual( [] )
+			expect( composite.makeSeed( {} ) ).toEqual( [] )
 		} )
 		
 		it( `Should return instance after callback`, () => {
 			
 			const composite = new InstanceCompositeState()
 			
-			expect( composite.onCreated( "instance", {} ) ).toBe( "instance" )
+			expect( composite.applyOnCreated( "instance", {} ) ).toBe( "instance" )
 		} )
 	} )
 	
@@ -40,7 +40,7 @@ describe( `CompositeState`, () => {
 				
 				const composite = new InstanceCompositeState( firstState, secondState )
 				
-				expect( composite.seed( {} ) ).toEqual( [ "waffles", "syrup" ] )
+				expect( composite.makeSeed( {} ) ).toEqual( [ "waffles", "syrup" ] )
 			} )
 			
 			it( `Should pass generator to each seed`, () => {
@@ -50,7 +50,7 @@ describe( `CompositeState`, () => {
 				
 				const composite = new InstanceCompositeState( firstState, secondState )
 				
-				expect( composite.seed( GENERATOR ) ).toEqual( [ GENERATOR.someString(), GENERATOR.someNumber() ] )
+				expect( composite.makeSeed( GENERATOR ) ).toEqual( [ GENERATOR.someString(), GENERATOR.someNumber() ] )
 			} )
 		} )
 		
@@ -67,7 +67,7 @@ describe( `CompositeState`, () => {
 				      } )
 				
 				const result = new InstanceCompositeState( firstState, secondState )
-					.onCreated( instance, {} )
+					.applyOnCreated( instance, {} )
 				
 				expect( instance.setBreakfast ).toHaveBeenCalledTimes( 2 )
 				expect( instance.setBreakfast ).toHaveBeenNthCalledWith( 1, "🍩" )
@@ -83,7 +83,7 @@ describe( `CompositeState`, () => {
 				} )
 				
 				const result = new InstanceCompositeState( state )
-					.onCreated( instance, {} )
+					.applyOnCreated( instance, {} )
 				
 				expect( result ).toBe( instance )
 			} )
@@ -94,7 +94,7 @@ describe( `CompositeState`, () => {
 				const secondOncreated = jest.fn().mockImplementation( ( instance, _ ) => "🥞" )
 				
 				const result = new InstanceCompositeState( makeState( undefined, firstOncreated ), makeState( undefined, secondOncreated ) )
-					.onCreated( "instance", "generator" )
+					.applyOnCreated( "instance", "generator" )
 				
 				expect( firstOncreated ).toHaveBeenCalledWith( "instance", "generator" )
 				
@@ -108,7 +108,7 @@ describe( `CompositeState`, () => {
 				const state = makeState( undefined, ( instance, _ ) => GENERATOR.someString() )
 				
 				const result = new InstanceCompositeState( state )
-					.onCreated( {}, GENERATOR )
+					.applyOnCreated( {}, GENERATOR )
 				
 				expect( result ).toBe( GENERATOR.someString() )
 			} )
@@ -119,11 +119,11 @@ describe( `CompositeState`, () => {
 				
 				const composite = new InstanceCompositeState( makeState( _ => [ "waffles" ] ) )
 				
-				expect( composite.seed( {} ) ).toEqual( [ "waffles" ] )
+				expect( composite.makeSeed( {} ) ).toEqual( [ "waffles" ] )
 				
 				composite.empty()
 				
-				expect( composite.seed( {} ) ).toEqual( [] )
+				expect( composite.makeSeed( {} ) ).toEqual( [] )
 			} )
 		} )
 		
@@ -132,11 +132,11 @@ describe( `CompositeState`, () => {
 				
 				const composite = new InstanceCompositeState(  )
 				
-				expect( composite.seed( {} ) ).toEqual( [] )
+				expect( composite.makeSeed( {} ) ).toEqual( [] )
 				
 				composite.add(makeState( _ => [ "waffles" ] ))
 				
-				expect( composite.seed( {} ) ).toEqual( [ "waffles" ] )
+				expect( composite.makeSeed( {} ) ).toEqual( [ "waffles" ] )
 			} )
 		} )
 	} )
@@ -146,7 +146,7 @@ describe( `CompositeState`, () => {
 function makeState( seed?: seedGenerator, callback?: onCreatedCallback ): State
 {
 	return {
-		onCreated: callback || (( i, g ) => undefined),
-		seed:      seed || (( g ) => []),
+		applyOnCreated: callback || (( i, g ) => undefined),
+		makeSeed:       seed || (( g ) => []),
 	}
 }
