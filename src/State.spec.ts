@@ -113,32 +113,6 @@ describe( `CompositeState`, () => {
 				expect( result ).toBe( GENERATOR.someString() )
 			} )
 		} )
-		
-		describe( `empty()`, () => {
-			it( `Should empty the collection`, () => {
-				
-				const composite = new BuildStepCompositeState( makeState( _ => [ "waffles" ] ) )
-				
-				expect( composite.makeSeed( {} ) ).toEqual( [ "waffles" ] )
-				
-				composite.empty()
-				
-				expect( composite.makeSeed( {} ) ).toEqual( [] )
-			} )
-		} )
-		
-		describe( `add()`, () => {
-			it( `Should add passed state to composite `, () => {
-				
-				const composite = new BuildStepCompositeState(  )
-				
-				expect( composite.makeSeed( {} ) ).toEqual( [] )
-				
-				composite.add(makeState( _ => [ "waffles" ] ))
-				
-				expect( composite.makeSeed( {} ) ).toEqual( [ "waffles" ] )
-			} )
-		} )
 	} )
 } )
 

@@ -2,24 +2,12 @@ import * as merge from "lodash.merge"
 import { onCreatedCallback, seedGenerator } from "./features.spec"
 
 
-
-
-export interface Composite<T>
-{
-	empty: () => void
-	add: ( thing: T ) => void
-}
-
 export interface State
 {
 	makeSeed: seedGenerator
 	applyOnCreated: onCreatedCallback
 }
 
-export interface CompositeState extends State, Composite<State>
-{
-
-}
 
 class NullState implements State
 {
@@ -49,7 +37,7 @@ export class BuildStepState implements State
 	
 }
 
-export class BuildStepCompositeState implements CompositeState
+export class BuildStepCompositeState implements State
 {
 	private _states: Array<State> = []
 	
@@ -76,11 +64,5 @@ export class BuildStepCompositeState implements CompositeState
 					merge( seed, state.makeSeed( generator ) ),
 				[],
 			)
-	
-	
-	add = ( state: State ) => this._states.push( state )
-	
-	
-	empty = () => this._states = []
 }
 

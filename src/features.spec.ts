@@ -1,4 +1,4 @@
-import { BuildStepCompositeState, BuildStepState, CompositeState, State } from "./State"
+import { BuildStepCompositeState, BuildStepState, State } from "./State"
 import { BuildConfig, BuilderBuildConfig } from "./BuildConfig"
 
 
@@ -49,11 +49,12 @@ export class Builder
 	
 	private _buildConfig!: BuildConfig<State>
 	
+	
 	constructor( generator: any, model: Function, seed: seedGenerator, onCreated?: onCreatedCallback )
 	{
 		this._defaultState = new BuildStepState( seed, onCreated )
 		
-		this._buildConfig = new BuilderBuildConfig(this._defaultState)
+		this._buildConfig = new BuilderBuildConfig( this._defaultState )
 		
 		this._model = model
 		
@@ -107,7 +108,7 @@ export class Builder
 	
 	times( times: number ): this
 	{
-		this._buildConfig.setTimes(times)
+		this._buildConfig.setTimes( times )
 		
 		return this
 	}
@@ -115,7 +116,7 @@ export class Builder
 	
 	private _make()
 	{
-		const state = new BuildStepCompositeState(...this._buildConfig.getSteps())
+		const state = new BuildStepCompositeState( ...this._buildConfig.getSteps() )
 		
 		let instance = new (this._model as any)( ...state.makeSeed( this._generator ) )
 		
@@ -125,7 +126,7 @@ export class Builder
 	
 	private _activateStateForBuild( state: State ): void
 	{
-		this._buildConfig.addStep(state)
+		this._buildConfig.addStep( state )
 	}
 	
 	
