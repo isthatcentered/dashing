@@ -1,4 +1,4 @@
-import { BuildStepCompositeState, BuildStepState, State } from "./State"
+import { BuildStepCompositeState, BuildStepState, CompositeState, State } from "./State"
 
 
 
@@ -41,13 +41,13 @@ export interface FactorySlice
 export class Builder
 {
 	
-	private _defaultState: BuildStepState
-	
-	
 	private _generator: any
 	private _model: Function
-	private _states: { [ name: string ]: State } = {}
-	private _activatedStates!: State
+	private _defaultState: BuildStepState
+	private _registeredStates: { [ name: string ]: State } = {}
+	
+	private _activatedStates: CompositeState = new BuildStepCompositeState()
+	
 	private _times: number = 1
 	
 	
@@ -84,7 +84,7 @@ export class Builder
 	
 	registerState( stateName: string, seed: seedGenerator, onCreated?: onCreatedCallback ): this
 	{
-		this._states[ stateName ] = new BuildStepState( seed, onCreated )
+		this._registeredStates[ stateName ] = new BuildStepState( seed, onCreated )
 		
 		return this
 	}
@@ -101,8 +101,9 @@ export class Builder
 	
 	reset()
 	{
-		this._activatedStates = new BuildStepCompositeState( this._defaultState )
+		this._activatedStates.empty()
 		
+		this._activatedStates.add( this._defaultState )
 		
 		this._times = 1
 	}
@@ -118,12 +119,6 @@ export class Builder
 	}
 	
 	
-	private _activateStateForBuild( state: State ): void
-	{
-		this._activatedStates = new BuildStepCompositeState( this._activatedStates, state )
-	}
-	
-	
 	private _make()
 	{
 		let instance = new (this._model as any)( ...this._activatedStates.makeSeed( this._generator ) )
@@ -132,9 +127,15 @@ export class Builder
 	}
 	
 	
+	private _activateStateForBuild( state: State ): void
+	{
+		this._activatedStates.add(state)
+	}
+	
+	
 	private _getState( stateName: string )
 	{
-		const state = this._states[ stateName ]
+		const state = this._registeredStates[ stateName ]
 		
 		if ( !state )
 			throw new Error( `No state registered under name ${stateName}` )
