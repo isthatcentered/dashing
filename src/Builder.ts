@@ -24,7 +24,7 @@ export class ModelBuilder implements Builder
 	private _generator: any
 	private _model: Function
 	private _defaultState: State
-	private _registeredStates: { [ name: string ]: State } = {}
+	private _states: Map<string, State> = new Map()
 	
 	private _buildConfig!: BuildConfig<State>
 	
@@ -64,7 +64,7 @@ export class ModelBuilder implements Builder
 	
 	registerState( stateName: string, seed: seed, onCreated?: dashingCallback ): this
 	{
-		this._registeredStates[ stateName ] = new BuildStepState( seed, onCreated )
+		this._states.set( stateName, new BuildStepState( seed, onCreated ) )
 		
 		return this
 	}
@@ -111,7 +111,7 @@ export class ModelBuilder implements Builder
 	
 	private _getState( stateName: string )
 	{
-		const state = this._registeredStates[ stateName ]
+		const state = this._states.get( stateName )
 		
 		if ( !state )
 			throw new Error( `No state registered under name ${stateName}` )
