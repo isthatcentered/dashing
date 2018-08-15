@@ -1,8 +1,8 @@
 {
-    "name": "mobjects",
+    "name": "Dashing",
     "version": "1.0.0",
     "description": "Model Factories just like in Laravel",
-    "main": "index.js",
+    "main": "dist/index.js",
     "scripts": {
         "test": "jest --watchAll -b",
         "start": "parcel src/index.ts & yarn test",
@@ -41,6 +41,8 @@
     },
     "author": "Edouard Penin <e.peninb@gmail.com>",
     "license": "ISC",
+    "homepage": "https://github.com/isthatcentered/dashing",
+    "keywords": ["dashing", "fixture", "model factory", "factory", "model", "auto", "generate", "states", "instance"],
     "devDependencies": {
         "@types/faker": "^4.1.2",
         "@types/jest": "^23.3.1",
@@ -49,7 +51,6 @@
         "babel-preset-env": "^1.7.0",
         "faker": "^4.1.0",
         "jest": "^23.4.2",
-        "jest-tap-reporter": "^1.9.0",
         "lodash.merge": "^4.6.1",
         "parcel-bundler": "^1.9.7",
         "ts-jest": "^23.1.2",
