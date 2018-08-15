@@ -11,8 +11,7 @@
     "babel": {
         "presets": [
             [
-                "env",
-                "preact"
+                "env"
             ]
         ],
         "plugins": [
@@ -41,8 +40,25 @@
     },
     "author": "Edouard Penin <e.peninb@gmail.com>",
     "license": "ISC",
-    "homepage": "https://github.com/isthatcentered/dashing",
-    "keywords": ["dashing", "fixture", "model factory", "factory", "model", "auto", "generate", "states", "instance"],
+    "homepage": "https://github.com/isthatcentered/dashing#readme",
+    "keywords": [
+        "dashing",
+        "fixture",
+        "model factory",
+        "factory",
+        "model",
+        "auto",
+        "generate",
+        "states",
+        "instance"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/isthatcentered/dashing.git"
+    },
+    "bugs": {
+        "url": "https://github.com/isthatcentered/dashing/issues"
+    },
     "devDependencies": {
         "@types/faker": "^4.1.2",
         "@types/jest": "^23.3.1",
@@ -57,6 +73,5 @@
         "typescript": "^3.0.1",
         "@types/lodash.merge": "^4.6.4"
     },
-    "dependencies": {
-    }
+    "dependencies": {}
 }
