@@ -1,9 +1,8 @@
-import { Builder } from "./Builder"
-import { Dashing } from "./Dashing"
+import { Builder, ModelBuilder } from "./Builder"
+import * as makeDashing from "./index"
+import FakerStatic = Faker.FakerStatic
 
 
-
-// @todo: passing array or seedFactory
 
 // used for below tests
 class SomeClass
@@ -29,6 +28,50 @@ class SomeClass
 }
 
 describe( `Dashing`, () => {
+	
+	describe( `Usage`, () => {
+		
+		test( `I can configure my factory right after defining it`, () => {
+			
+			const factory: Builder = makeDashing()
+				.define( SomeClass, _ => [] )
+				.registerState( "defeated", _ => [] )
+				.registerState( "takenOver", _ => [] )
+			
+			expect( factory ).toBeInstanceOf( ModelBuilder )
+		} )
+		
+		test( `I can get a factory using dashing(ClassName)`, () => {
+			
+			const dashing = makeDashing()
+			
+			dashing.define( SomeClass, _ => [] )
+			
+			expect( dashing( SomeClass ).make() ).toBeInstanceOf( SomeClass )
+		} )
+		
+		test( `It comes with faker as default generator`, () => {
+			
+			const created: SomeClass = makeDashing()
+			// will fail/throw anyway if generator not provided
+				.define( SomeClass, ( faker: FakerStatic ) => [ faker.internet.email() ] )
+				.make()
+			
+			expect( created.param1 ).not.toBe( undefined )
+		} )
+		
+		test( `I can pass my own generator`, () => {
+			
+			
+			const customGenerator = { returnFive: () => 5 }
+			
+			const created: SomeClass = makeDashing( customGenerator )
+				.define( SomeClass, customGenerator => [ customGenerator.returnFive() ] )
+				.make()
+			
+			expect( created.param1 ).toBe( 5 )
+		} )
+	} )
 	
 	
 	describe( `Providing a default model state`, () =>
@@ -355,9 +398,3 @@ describe( `Dashing`, () => {
 		} )
 	} )
 } )
-
-
-function makeDashing( generator = {} )
-{
-	return new Dashing( generator )
-}
