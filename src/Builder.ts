@@ -1,4 +1,4 @@
-import { BuildStepCompositeState, BuildStepState, State } from "./State"
+import { BuildStepCompositeState, BuildStepState, NullState, State } from "./State"
 import { BuildConfig, ModelBuilderBuildConfig } from "./BuildConfig"
 import { dashingCallback, seed } from "./Dashing"
 
@@ -72,8 +72,14 @@ export class ModelBuilder implements Builder
 	
 	applyState( ...states: Array<string> )
 	{
-		states.forEach( stateName =>
-			this._activateStateForBuild( this._getState( stateName ) ) )
+		states.forEach( stateName => {
+			
+			if ( !this._states.has( stateName ) )
+				throw new Error( `No state registered under name ${stateName}` )
+			
+			// nullstate is just for ts, we make sure abov that it exists
+			return this._activateStateForBuild( this._states.get( stateName ) || (new NullState()) )
+		} )
 		
 		return this
 	}
@@ -106,16 +112,5 @@ export class ModelBuilder implements Builder
 	private _activateStateForBuild( state: State ): void
 	{
 		this._buildConfig.addStep( state )
-	}
-	
-	
-	private _getState( stateName: string )
-	{
-		const state = this._states.get( stateName )
-		
-		if ( !state )
-			throw new Error( `No state registered under name ${stateName}` )
-		
-		return state
 	}
 }

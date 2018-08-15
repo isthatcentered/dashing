@@ -12,7 +12,7 @@ export interface State
 }
 
 
-class NullState implements State
+export class NullState implements State
 {
 	applyOnCreated = ( instance, generator ) => undefined
 	
