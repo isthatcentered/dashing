@@ -1,6 +1,7 @@
-import { onCreatedCallback, seedFactory } from "./Dashing"
+import { onCreatedCallback} from "./index"
 import { BuildStepCompositeState, BuildStepState, State } from "./State"
 import { BuildConfig, ModelBuilderBuildConfig } from "./BuildConfig"
+import seedFactory = require("./index")
 
 
 

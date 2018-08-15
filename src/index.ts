@@ -1,33 +1,7 @@
-import { Dashing, onCreatedCallback, seedFactory } from "./Dashing"
-import { Builder } from "./Builder"
-import * as faker from "faker"
+import { dashingFactory, makeDashing } from "./Dashing"
 
 
 
-
-interface dashing
-{
-	( model: Function ): Builder
-	
-	define: ( model: Function, seed: seedFactory, onCreatedCallback?: onCreatedCallback ) => Builder;
-}
-
-
-
-let makeDashing = (( generator: any = faker ): dashing => {
-	
-	const dashing = new Dashing( generator )
-	
-	let f: any = ( model ) =>
-		dashing.getFactory( model )
-	
-	f.define = ( model, seed, onCreatedCallback ) =>
-		dashing.define( model, seed, onCreatedCallback )
-	
-	return f
-})
-
-
-
+// @todo: https://codeburst.io/https-chidume-nnamdi-com-npm-module-in-typescript-12b3b22f0724
 export = makeDashing
 

@@ -1,12 +1,14 @@
+// @ts-ignore
 import * as merge from "lodash.merge"
-import { seedFactory } from "./Dashing"
-import { onCreatedCallback } from "./Dashing"
+import { dashingCallback, seed } from "./Dashing"
+
+
 
 
 export interface State
 {
-	makeSeed: seedFactory
-	applyOnCreated: onCreatedCallback
+	makeSeed: seed
+	applyOnCreated: dashingCallback
 }
 
 
@@ -20,11 +22,11 @@ class NullState implements State
 export class BuildStepState implements State
 {
 	
-	private _seed: seedFactory
-	private _onCreated: onCreatedCallback
+	private _seed: seed
+	private _onCreated: dashingCallback
 	
 	
-	constructor( seed: seedFactory, onCreated?: onCreatedCallback )
+	constructor( seed: seed, onCreated?: dashingCallback )
 	{
 		this._seed = seed
 		this._onCreated = onCreated || (() => undefined)
