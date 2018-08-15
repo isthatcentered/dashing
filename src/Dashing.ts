@@ -17,7 +17,7 @@ export interface Dashing
 
 export interface dashingFactory
 {
-	( generator: any ): Dashing
+	( generator?: any ): Dashing
 }
 
 export const makeDashing: dashingFactory = (( generator: any = faker ) => {

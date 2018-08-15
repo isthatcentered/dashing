@@ -1,20 +1,19 @@
-import { onCreatedCallback} from "./index"
 import { BuildStepCompositeState, BuildStepState, State } from "./State"
 import { BuildConfig, ModelBuilderBuildConfig } from "./BuildConfig"
-import seedFactory = require("./index")
+import { dashingCallback, seed } from "./Dashing"
 
 
 
 
 export interface Builder
 {
-	registerState( stateName: string, seed: seedFactory, onCreated?: onCreatedCallback ): this
+	registerState( stateName: string, seed: seed, onCreated?: dashingCallback ): this
 	
 	applyState( ...states: Array<string> ): this
 	
 	times( times: number ): this
 	
-	make( overrides?: seedFactory ): any
+	make( overrides?: seed ): any
 	
 	reset(): void
 }
@@ -30,7 +29,7 @@ export class ModelBuilder implements Builder
 	private _buildConfig!: BuildConfig<State>
 	
 	
-	constructor( generator: any, model: Function, seed: seedFactory, onCreated?: onCreatedCallback )
+	constructor( generator: any, model: Function, seed: seed, onCreated?: dashingCallback )
 	{
 		this._defaultState = new BuildStepState( seed, onCreated )
 		
@@ -44,7 +43,7 @@ export class ModelBuilder implements Builder
 	}
 	
 	
-	make( overrides: seedFactory = _ => [] ): any
+	make( overrides: seed = _ => [] ): any
 	{
 		this._activateStateForBuild( new BuildStepState( overrides ) )
 		
@@ -63,7 +62,7 @@ export class ModelBuilder implements Builder
 	}
 	
 	
-	registerState( stateName: string, seed: seedFactory, onCreated?: onCreatedCallback ): this
+	registerState( stateName: string, seed: seed, onCreated?: dashingCallback ): this
 	{
 		this._registeredStates[ stateName ] = new BuildStepState( seed, onCreated )
 		
