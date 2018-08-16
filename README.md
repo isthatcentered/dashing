@@ -74,13 +74,13 @@ import makeDashing from "dashing"
 let dashing = makeDashing({}) 
 
 dashing.define( User, _ => ["Bruce Wayne", "🥞"] ) //  new User(Bruce, Wayne, 🥞)
-	.registerState( "superHero", _ => [ "Catwoman", "🥛" ] ) //  new User(Catwoman, "🥛" )
-	.registerState( "superVilain", _ => [ "twoface", "🍉" ] ) // new User( "twoface", "🍉" )
-	.registerState( "batman", _ => [ undefined, "🍕" ] ) // new User( "Bruce Wayne", "🍕" )
+	.registerPreset( "superHero", _ => [ "Catwoman", "🥛" ] ) //  new User(Catwoman, "🥛" )
+	.registerPreset( "superVilain", _ => [ "twoface", "🍉" ] ) // new User( "twoface", "🍉" )
+	.registerPreset( "batman", _ => [ undefined, "🍕" ] ) // new User( "Bruce Wayne", "🍕" )
 
 dashing.define( Product, _ => [9.99, 10, "Philosopher stone"] ) // equals new Product(9.99, 10, "philospher stone")
-	.registerState( "soldOut", _ => [ undefined, 0] ) // equals new Product(9.99, 0, "philospher stone")
-	.registerState( "crappy", _ => [1, 100, "Crappy product"] ) // equals new Product(1, 100, "Crappy product)
+	.registerPreset( "soldOut", _ => [ undefined, 0] ) // equals new Product(9.99, 0, "philospher stone")
+	.registerPreset( "crappy", _ => [1, 100, "Crappy product"] ) // equals new Product(1, 100, "Crappy product)
 
 export default dashing
 ```
@@ -105,7 +105,7 @@ const myCallbackForAState = (instance, _) => {
 } 
 
 dashing.define( User, _ => ["Alfred"], myDefaultCallback) // Will apply this cllback to every created instance
-	.registerState( "tiredAlfred", () => [], myCallbackForAState) // Will apply this callback to instance generated with this state
+	.registerPreset( "tiredAlfred", () => [], myCallbackForAState) // Will apply this callback to instance generated with this state
 	
 export default dashing
 ````
@@ -132,14 +132,14 @@ const instance = dashing(User)
 import dashing from "./someFile"
 
 const instance = dashing(User)
- 	.applyState( "tiredAlfred" ) // Each state params & it's callback will be applied on top of the other in the oreder you asked for
-	.applyState( "hungryAlfred" ) // (aka here moodyAlfred on top of hungryAlfred which is applied on top of tiredAlfred
-	.applyState( "moodyAlfred" )
+ 	.preset( "tiredAlfred" ) // Each state params & it's callback will be applied on top of the other in the oreder you asked for
+	.preset( "hungryAlfred" ) // (aka here moodyAlfred on top of hungryAlfred which is applied on top of tiredAlfred
+	.preset( "moodyAlfred" )
 	.make();
 
 // or
 const instance = dashing(User)
- 	.applyState( ["tiredAlfred", "hungryAlfred", "moodyAlfred"] )
+ 	.preset( ["tiredAlfred", "hungryAlfred", "moodyAlfred"] )
 	.make();
 ````
 
@@ -148,7 +148,7 @@ const instance = dashing(User)
 import dashing from "./someFile" 
 
 const instanceS = dashing(User)
-	.applyState( "tiredAlfred" )
+	.preset( "tiredAlfred" )
 	.times(99)
 	.make(); // we return an array when you ask for multiple instances 📦
 ````

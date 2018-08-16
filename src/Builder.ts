@@ -7,9 +7,9 @@ import { dashingCallback, seed } from "./Dashing"
 
 export interface Builder
 {
-	registerState( stateName: string, seed: seed, onCreated?: dashingCallback ): this
+	registerPreset( stateName: string, seed: seed, onCreated?: dashingCallback ): this
 	
-	applyState( ...states: Array<string> ): this
+	preset( ...states: Array<string> ): this
 	
 	times( times: number ): this
 	
@@ -62,7 +62,7 @@ export class ModelBuilder implements Builder
 	}
 	
 	
-	registerState( stateName: string, seed: seed, onCreated?: dashingCallback ): this
+	registerPreset( stateName: string, seed: seed, onCreated?: dashingCallback ): this
 	{
 		this._states.set( stateName, new BuildStepState( seed, onCreated ) )
 		
@@ -70,7 +70,7 @@ export class ModelBuilder implements Builder
 	}
 	
 	
-	applyState( ...states: Array<string> )
+	preset( ...states: Array<string> )
 	{
 		states.forEach( stateName => {
 			

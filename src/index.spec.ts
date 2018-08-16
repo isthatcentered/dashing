@@ -36,8 +36,8 @@ describe( `Dashing`, () => {
 			
 			const factory: Builder = makeDashing()
 				.define( SomeClass, _ => [] )
-				.registerState( "defeated", _ => [] )
-				.registerState( "takenOver", _ => [] )
+				.registerPreset( "defeated", _ => [] )
+				.registerPreset( "takenOver", _ => [] )
 			
 			expect( factory ).toBeInstanceOf( ModelBuilder )
 		} )
@@ -92,10 +92,10 @@ describe( `Dashing`, () => {
 			
 			const factory: Builder = makeDashing()
 				.define( SomeClass, _ => [ "batman", "robin" ] )
-				.registerState( "defeated", _ => [ undefined, "joker" ] )
+				.registerPreset( "defeated", _ => [ undefined, "joker" ] )
 			
 			const made: SomeClass = factory
-				.applyState( "defeated" )
+				.preset( "defeated" )
 				.make()
 			
 			expect( made.param1 ).toBe( "batman" )
@@ -106,12 +106,12 @@ describe( `Dashing`, () => {
 			
 			const factory: Builder = makeDashing()
 				.define( SomeClass, _ => [ "batman", "robin" ] )
-				.registerState( "defeated", _ => [ undefined, "joker" ] )
-				.registerState( "takenOver", _ => [ "twoface", "scarecrow" ] )
+				.registerPreset( "defeated", _ => [ undefined, "joker" ] )
+				.registerPreset( "takenOver", _ => [ "twoface", "scarecrow" ] )
 			
 			const made: SomeClass = factory
-				.applyState( "defeated" )
-				.applyState( "takenOver" )
+				.preset( "defeated" )
+				.preset( "takenOver" )
 				.make()
 			
 			expect( made.param1 ).toBe( "twoface" )
@@ -122,11 +122,11 @@ describe( `Dashing`, () => {
 			
 			const factory: Builder = makeDashing()
 				.define( SomeClass, _ => [ "batman", "robin" ] )
-				.registerState( "defeated", _ => [ undefined, "joker" ] )
-				.registerState( "takenOver", _ => [ "twoface", "scarecrow" ] )
+				.registerPreset( "defeated", _ => [ undefined, "joker" ] )
+				.registerPreset( "takenOver", _ => [ "twoface", "scarecrow" ] )
 			
 			const made: SomeClass = factory
-				.applyState( "defeated", "takenOver" )
+				.preset( "defeated", "takenOver" )
 				.make()
 			
 			expect( made.param1 ).toBe( "twoface" )
@@ -137,9 +137,9 @@ describe( `Dashing`, () => {
 			
 			const factory = makeDashing()
 				.define( SomeClass, _ => [ "bruce" ] )
-				.registerState( "meh", _ => [ "alfred" ] )
+				.registerPreset( "meh", _ => [ "alfred" ] )
 			
-			factory.applyState( "meh" )
+			factory.preset( "meh" )
 			
 			const first: SomeClass = factory
 				.make()
@@ -157,7 +157,7 @@ describe( `Dashing`, () => {
 			const factory = makeDashing()
 				.define( SomeClass, _ => [] )
 			
-			expect( () => factory.applyState( "meh" ) ).toThrow()
+			expect( () => factory.preset( "meh" ) ).toThrow()
 		} )
 	} )
 	
@@ -186,13 +186,13 @@ describe( `Dashing`, () => {
 					.define( SomeClass, _ => [], o => {
 						o.setStuff( "alfred" )
 					} )
-					.registerState( "sleeping", () => [], o => {
+					.registerPreset( "sleeping", () => [], o => {
 						
 						expect( o.getStuff() ).toBe( "alfred" )
 						
 						o.setStuff( "sleeping alfred" )
 					} )
-					.registerState( "awake", () => [], o => {
+					.registerPreset( "awake", () => [], o => {
 						
 						expect( o.getStuff() ).toBe( "sleeping alfred" )
 						
@@ -200,8 +200,8 @@ describe( `Dashing`, () => {
 					} )
 				
 				const made: SomeClass = factory
-					.applyState( "sleeping" )
-					.applyState( "awake" )
+					.preset( "sleeping" )
+					.preset( "awake" )
 					.make()
 				
 				expect( made.getStuff() ).toBe( "awaken alfred" )
@@ -214,7 +214,7 @@ describe( `Dashing`, () => {
 				
 				const factory: Builder = makeDashing()
 					.define( SomeClass, _ => [], o => "batman" )
-					.registerState( "blah", () => [], o => {
+					.registerPreset( "blah", () => [], o => {
 						
 						expect( o ).toBe( "batman" )
 						
@@ -222,7 +222,7 @@ describe( `Dashing`, () => {
 					} )
 				
 				const made: SomeClass = factory
-					.applyState( "blah" )
+					.preset( "blah" )
 					.make()
 				
 				expect( made ).toBe( "robin" )
@@ -237,7 +237,7 @@ describe( `Dashing`, () => {
 			
 			const factory = makeDashing()
 				.define( SomeClass, _ => [ "batman" ] )
-				.registerState( "blah", _ => [ "robin" ] )
+				.registerPreset( "blah", _ => [ "robin" ] )
 			
 			const made: SomeClass = factory
 				.make( _ => [ "alfred" ] )
@@ -280,13 +280,13 @@ describe( `Dashing`, () => {
 			
 			const factory: Builder = makeDashing()
 				.define( SomeClass, _ => [ "batman", "robin" ] )
-				.registerState( "breakfast", _ => [ undefined, undefined, "batgirl" ], o => {
+				.registerPreset( "breakfast", _ => [ undefined, undefined, "batgirl" ], o => {
 					o.setStuff( "waffles" )
 				} )
 			
 			const made: Array<SomeClass> = factory
 				.times( 3 )
-				.applyState( "breakfast" )
+				.preset( "breakfast" )
 				.make( _ => [ "alfred" ] )
 			
 			made.forEach( item => {
@@ -327,13 +327,13 @@ describe( `Dashing`, () => {
 					const factory: Builder = makeDashing( GENERATOR )
 						.define( SomeClass, _ => [] )
 					
-					factory.registerState( "withgenerator", generator => [
+					factory.registerPreset( "withgenerator", generator => [
 						generator.someNumber(),
 						generator.someString(),
 					] )
 					
 					const made: SomeClass = factory
-						.applyState( "withgenerator" )
+						.preset( "withgenerator" )
 						.make()
 					
 					expect( made.param1 ).toBe( GENERATOR.someNumber() )
@@ -383,14 +383,14 @@ describe( `Dashing`, () => {
 					const factory: Builder = makeDashing( GENERATOR )
 						.define( SomeClass, _ => [] )
 					
-					factory.registerState( "breakfast", _ => [],
+					factory.registerPreset( "breakfast", _ => [],
 						( instance: SomeClass, generator ) => {
 							instance.setStuff( generator.someString() )
 						},
 					)
 					
 					const made: SomeClass = factory
-						.applyState( "breakfast" )
+						.preset( "breakfast" )
 						.make()
 					
 					

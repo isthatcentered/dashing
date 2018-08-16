@@ -21,9 +21,9 @@ describe( `ModelBuilder`, () => {
 			
 			const builder = new ModelBuilder({}, jest.fn(), _ => [])
 			
-			builder.registerState("state with a space", stateSeed)
+			builder.registerPreset("state with a space", stateSeed)
 			
-			builder.applyState("state with a space")
+			builder.preset("state with a space")
 				.make()
 			
 			expect(stateSeed).toHaveBeenCalled()
