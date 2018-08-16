@@ -1,7 +1,7 @@
 {
     "name": "Dashing",
     "version": "1.0.0",
-    "description": "Model Factories just like in Laravel",
+    "description": "Generate pre-configured objects from presets like it's nothing. (Model Factories just like in Laravel) ",
     "main": "dist/index.js",
     "scripts": {
         "test": "jest --watchAll -b",

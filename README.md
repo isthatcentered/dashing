@@ -1,5 +1,5 @@
 # Dashing
-@todo: description, link to features
+Generate pre-configured objects from presets like it's nothing. (Model Factories just like in Laravel) 
 
 ## How do I install this thing ?
 ```sh
