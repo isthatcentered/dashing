@@ -31,7 +31,7 @@ export class ModelBuilder implements Builder
 	
 	constructor( generator: any, model: Function, seed: seed, onCreated?: dashingCallback )
 	{
-		this._defaultState = new BuildStepState( seed, onCreated )
+		this._defaultState = new BuildStepState( this._normalizeSeed( seed ), onCreated )
 		
 		this._buildConfig = new ModelBuilderBuildConfig( this._defaultState )
 		
@@ -45,7 +45,7 @@ export class ModelBuilder implements Builder
 	
 	make( overrides: seed = _ => [] ): any
 	{
-		this._activateStateForBuild( new BuildStepState( overrides ) )
+		this._activateStateForBuild( new BuildStepState( this._normalizeSeed( overrides ) ) )
 		
 		let made: any[] = []
 		
@@ -64,7 +64,7 @@ export class ModelBuilder implements Builder
 	
 	registerPreset( stateName: string, seed: seed, onCreated?: dashingCallback ): this
 	{
-		this._states.set( stateName, new BuildStepState( seed, onCreated ) )
+		this._states.set( stateName, new BuildStepState( this._normalizeSeed( seed ), onCreated ) )
 		
 		return this
 	}
@@ -112,5 +112,13 @@ export class ModelBuilder implements Builder
 	private _activateStateForBuild( state: State ): void
 	{
 		this._buildConfig.addStep( state )
+	}
+	
+	
+	private _normalizeSeed( seed: any ): seed
+	{
+		return typeof seed !== "function" ?
+		       g => seed :
+		       seed
 	}
 }

@@ -1,6 +1,7 @@
 import { Builder, ModelBuilder } from "./Builder"
 import * as makeDashing from "./index"
 import * as faker from "faker"
+import { seed } from "./Dashing"
 import FakerStatic = Faker.FakerStatic
 
 
@@ -59,6 +60,23 @@ describe( `Dashing`, () => {
 			
 			expect( made.param1 ).toBe( "batman" )
 			expect( made.param2 ).toBe( "robin" )
+		} )
+		
+		test( `Defaults can be passed either as a function returning an array, or as an array`, () => {
+			
+			const firstSpy  = jest.fn(),
+			      secondSpy = jest.fn(),
+			      dashing   = makeDashing()
+			
+			dashing.define( firstSpy, [ "batman", "robin" ] )
+			dashing( firstSpy ).make()
+			
+			dashing.define( secondSpy, _ => [ "alfred", "batgirl" ] )
+			dashing( secondSpy ).make()
+			
+			expect( firstSpy ).toHaveBeenCalledWith( "batman", "robin" )
+			
+			expect( secondSpy ).toHaveBeenCalledWith( "alfred", "batgirl" )
 		} )
 	} )
 	
@@ -206,6 +224,7 @@ describe( `Dashing`, () => {
 		} )
 		
 		describe( `Returning an object to onCreated callback`, () => {
+			
 			test( `Should use the returned object for all following processes`, () => {
 				
 				const factory: Builder = makeDashing()
@@ -418,7 +437,7 @@ describe( `Dashing`, () => {
 } )
 
 
-function makeSeed( ...args: Array<any> )
+function makeSeed( ...args: Array<any> ): seed
 {
-	return _ => args
+	return args
 }

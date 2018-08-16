@@ -3,7 +3,11 @@ import { Builder, ModelBuilder } from "./Builder"
 
 
 
-export type seed = ( generator ) => any[]
+type simpleSeed = Array<any>
+
+type dynamicSeed = ( generator: any ) => simpleSeed
+
+export type seed = simpleSeed | dynamicSeed
 
 export type dashingCallback = ( instance: any, generator: any ) => any | void
 
