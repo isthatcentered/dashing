@@ -1,5 +1,4 @@
 import { Builder, ModelBuilder } from "./Builder"
-import * as faker from "faker"
 
 
 
@@ -20,7 +19,7 @@ export interface dashingFactory
 	( generator?: any ): Dashing
 }
 
-export const makeDashing: dashingFactory = (( generator: any = faker ) => {
+export const makeDashing: dashingFactory = (( generator: any = {} ) => {
 	
 	const _builders: Map<Function, Builder> = new Map()
 	

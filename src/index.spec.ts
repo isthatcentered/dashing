@@ -50,7 +50,7 @@ describe( `Dashing`, () => {
 			expect( dashing( SomeClass ).make() ).toBeInstanceOf( SomeClass )
 		} )
 		
-		test( `It comes with faker as default generator`, () => {
+		xtest( `It comes with faker as default generator`, () => {
 			
 			const created: SomeClass = makeDashing()
 			// will fail/throw anyway if generator not provided
