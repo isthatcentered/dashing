@@ -1,7 +1,7 @@
 import { Builder, ModelBuilder } from "./Builder"
 import * as makeDashing from "./index"
-import FakerStatic = Faker.FakerStatic
 import * as faker from "faker"
+import FakerStatic = Faker.FakerStatic
 
 
 
@@ -30,69 +30,46 @@ class SomeClass
 
 describe( `Dashing`, () => {
 	
-	describe( `Usage`, () => {
+	describe( `Basic usages`, () => {
 		
-		test( `I can configure my factory right after defining it`, () => {
+		test( `I can define my factory in a fluent way`, () => {
 			
 			const factory: Builder = makeDashing()
-				.define( SomeClass, _ => [] )
-				.registerPreset( "defeated", _ => [] )
-				.registerPreset( "takenOver", _ => [] )
+				.define( SomeClass, makeSeed() )
+				.registerPreset( "defeated", makeSeed() )
+				.registerPreset( "takenOver", makeSeed() )
 			
 			expect( factory ).toBeInstanceOf( ModelBuilder )
 		} )
 		
-		test( `I can get a factory using dashing(ClassName)`, () => {
+		test( `I can make a model`, () => {
 			
 			const dashing = makeDashing()
 			
-			dashing.define( SomeClass, _ => [] )
+			dashing.define( SomeClass, makeSeed() )
 			
 			expect( dashing( SomeClass ).make() ).toBeInstanceOf( SomeClass )
 		} )
 		
-		xtest( `It comes with faker as default generator`, () => {
-			
-			const created: SomeClass = makeDashing(faker)// not anymore xD
-			// will fail/throw anyway if generator not provided
-				.define( SomeClass, ( faker: FakerStatic ) => [ faker.internet.email() ] )
-				.make()
-			
-			expect( created.param1 ).not.toBe( undefined )
-		} )
-		
-		test( `I can pass my own generator`, () => {
-			
-			
-			const customGenerator = { returnFive: () => 5 }
-			
-			const created: SomeClass = makeDashing( customGenerator )
-				.define( SomeClass, customGenerator => [ customGenerator.returnFive() ] )
-				.make()
-			
-			expect( created.param1 ).toBe( 5 )
-		} )
-	} )
-	
-	
-	describe( `Providing a default model state`, () =>
-		it( `Should apply given defaults as instance's constructor params`, () => {
+		test( `Every model is made with the provided defaults`, () => {
 			
 			const made: SomeClass = makeDashing()
-				.define( SomeClass, _ => [ "batman", "robin" ] )
+				.define( SomeClass, makeSeed( "batman", "robin" ) )
 				.make()
 			
 			expect( made.param1 ).toBe( "batman" )
 			expect( made.param2 ).toBe( "robin" )
-		} ) )
+		} )
+	} )
 	
-	describe( `States`, () => {
+	
+	describe( `Presets`, () => {
 		
-		it( `Should return model constructed with state override`, () => {
+		test( `I can override default model config with presets`, () => {
 			
 			const factory: Builder = makeDashing()
-				.define( SomeClass, _ => [ "batman", "robin" ] )
-				.registerPreset( "defeated", _ => [ undefined, "joker" ] )
+				.define( SomeClass, makeSeed( "batman", "robin" ) )
+				.registerPreset( "defeated", makeSeed( undefined, "joker" ) )
 			
 			const made: SomeClass = factory
 				.preset( "defeated" )
@@ -102,12 +79,12 @@ describe( `Dashing`, () => {
 			expect( made.param2 ).toBe( "joker" )
 		} )
 		
-		it( `Should override default state in order of applyance`, () => {
+		test( `When requiring multiple presets, they are applied in order of... applyance`, () => {
 			
 			const factory: Builder = makeDashing()
-				.define( SomeClass, _ => [ "batman", "robin" ] )
-				.registerPreset( "defeated", _ => [ undefined, "joker" ] )
-				.registerPreset( "takenOver", _ => [ "twoface", "scarecrow" ] )
+				.define( SomeClass, makeSeed( "batman", "robin" ) )
+				.registerPreset( "defeated", makeSeed( undefined, "joker" ) )
+				.registerPreset( "takenOver", makeSeed( "twoface", "scarecrow" ) )
 			
 			const made: SomeClass = factory
 				.preset( "defeated" )
@@ -118,12 +95,12 @@ describe( `Dashing`, () => {
 			expect( made.param2 ).toBe( "scarecrow" )
 		} )
 		
-		it( `Should allow me to apply multiple states at once for convenience`, () => {
+		test( `I can apply multiple presets at once`, () => {
 			
 			const factory: Builder = makeDashing()
-				.define( SomeClass, _ => [ "batman", "robin" ] )
-				.registerPreset( "defeated", _ => [ undefined, "joker" ] )
-				.registerPreset( "takenOver", _ => [ "twoface", "scarecrow" ] )
+				.define( SomeClass, makeSeed( "batman", "robin" ) )
+				.registerPreset( "defeated", makeSeed( undefined, "joker" ) )
+				.registerPreset( "takenOver", makeSeed( "twoface", "scarecrow" ) )
 			
 			const made: SomeClass = factory
 				.preset( "defeated", "takenOver" )
@@ -133,11 +110,11 @@ describe( `Dashing`, () => {
 			expect( made.param2 ).toBe( "scarecrow" )
 		} )
 		
-		it( `Should not inherit applied states of previous item on creation`, () => {
+		test( `Every applied preset is resseted after make() for next instance`, () => {
 			
 			const factory = makeDashing()
-				.define( SomeClass, _ => [ "bruce" ] )
-				.registerPreset( "meh", _ => [ "alfred" ] )
+				.define( SomeClass, makeSeed( "bruce" ) )
+				.registerPreset( "meh", makeSeed( "alfred" ) )
 			
 			factory.preset( "meh" )
 			
@@ -148,42 +125,60 @@ describe( `Dashing`, () => {
 				.make()
 			
 			expect( first.param1 ).toBe( "alfred" )
-			
 			expect( second.param1 ).toBe( "bruce" )
 		} )
 		
-		it( `Should throw when asking for unregistered state`, () => {
+		test( `Trying to activate an unregisterd preset throws`, () => {
 			
 			const factory = makeDashing()
-				.define( SomeClass, _ => [] )
+				.define( SomeClass, makeSeed() )
 			
 			expect( () => factory.preset( "meh" ) ).toThrow()
 		} )
 	} )
 	
-	describe( `After creation hook`, () => {
+	describe( `Overrides`, () => {
 		
-		describe( `Default for every new instance`, () =>
-			it( `Should apply onCreated callback to newly created instance`, () => {
+		test( `I can override the model's defaults and any applied preset on make`, () => {
+			
+			const factory = makeDashing()
+				.define( SomeClass, makeSeed( "batman", "robin" ) )
+				.registerPreset( "blah", makeSeed( undefined, "batgirl" ) )
+			
+			const made: SomeClass = factory
+				.make( makeSeed( "joker", "scarecrow" ) )
+			
+			expect( made.param1 ).toBe( "joker" )
+			expect( made.param2 ).toBe( "scarecrow" )
+		} )
+	} )
+	
+	describe( `After creation callback`, () => {
+		
+		describe( `default callback`, () => {
+			
+			test( `I can modify every instance after creation`, () => {
 				
 				const onCreatedCallback = jest.fn().mockImplementation( made => {
 					made.setStuff( "alfred" )
 				} )
 				
 				const made: SomeClass = makeDashing()
-					.define( SomeClass, _ => [], onCreatedCallback )
+					.define( SomeClass, makeSeed(), onCreatedCallback )
 					.make()
 				
 				expect( onCreatedCallback.mock.calls[ 0 ][ 0 ] ).toBe( made )
 				expect( made ).toBeInstanceOf( SomeClass )
 				expect( made.getStuff() ).toBe( "alfred" )
-			} ) )
+			} )
+		} )
 		
-		describe( `Per state`, () =>
-			it( `Should apply each state's oncreated callback in order of applyance`, () => {
+		describe( `Per preset callback`, () => {
+			
+			test( `Callacks are triggered in order of appliance`, () => {
 				
 				const factory: Builder = makeDashing()
-					.define( SomeClass, _ => [], o => {
+					.define( SomeClass, makeSeed(), o => {
 						o.setStuff( "alfred" )
 					} )
 					.registerPreset( "sleeping", () => [], o => {
@@ -207,13 +202,14 @@ describe( `Dashing`, () => {
 				expect( made.getStuff() ).toBe( "awaken alfred" )
 				
 				expect.assertions( 3 )
-			} ) )
+			} )
+		} )
 		
 		describe( `Returning an object to onCreated callback`, () => {
-			it( `Should use the returned object for following processes`, () => {
+			test( `Should use the returned object for all following processes`, () => {
 				
 				const factory: Builder = makeDashing()
-					.define( SomeClass, _ => [], o => "batman" )
+					.define( SomeClass, makeSeed(), o => "batman" )
 					.registerPreset( "blah", () => [], o => {
 						
 						expect( o ).toBe( "batman" )
@@ -232,24 +228,12 @@ describe( `Dashing`, () => {
 		} )
 	} )
 	
-	describe( `Overrides on make()`, () =>
-		it( `Should apply overrides on top of default AND states params`, () => {
-			
-			const factory = makeDashing()
-				.define( SomeClass, _ => [ "batman" ] )
-				.registerPreset( "blah", _ => [ "robin" ] )
-			
-			const made: SomeClass = factory
-				.make( _ => [ "alfred" ] )
-			
-			expect( made.param1 ).toBe( "alfred" )
-		} ) )
-	
-	describe( `Generating multiple instances automatically`, () => {
-		it( `Should generate the desired number of instance`, () => {
+	describe( `Multiple instances`, () => {
+		
+		test( `I can ask for multiple instances at once`, () => {
 			
 			const factory: Builder = makeDashing()
-				.define( SomeClass, _ => [] )
+				.define( SomeClass, makeSeed() )
 			
 			const made: Array<SomeClass> = factory
 				.times( 3 )
@@ -260,10 +244,10 @@ describe( `Dashing`, () => {
 			made.forEach( m => expect( m ).toBeInstanceOf( SomeClass ) )
 		} )
 		
-		it( `Should reset the "times" count after make for next object`, () => {
+		test( `Reset the desired number of instances to 1 after a make`, () => {
 			
 			const factory: Builder = makeDashing()
-				.define( SomeClass, _ => [] )
+				.define( SomeClass, makeSeed() )
 			
 			factory.times( 3 )
 			
@@ -276,18 +260,18 @@ describe( `Dashing`, () => {
 			expect( second ).toBeInstanceOf( SomeClass )
 		} )
 		
-		it( `Should still apply defaults, overrides, and callbacks to each one`, () => {
+		test( `Each instance gets the defaults, overrides, and callbacks asked for`, () => {
 			
 			const factory: Builder = makeDashing()
-				.define( SomeClass, _ => [ "batman", "robin" ] )
-				.registerPreset( "breakfast", _ => [ undefined, undefined, "batgirl" ], o => {
+				.define( SomeClass, makeSeed( "batman", "robin" ) )
+				.registerPreset( "breakfast", makeSeed( undefined, undefined, "batgirl" ), o => {
 					o.setStuff( "waffles" )
 				} )
 			
 			const made: Array<SomeClass> = factory
 				.times( 3 )
 				.preset( "breakfast" )
-				.make( _ => [ "alfred" ] )
+				.make( makeSeed( "alfred" ) )
 			
 			made.forEach( item => {
 				expect( item.param1 ).toBe( "alfred" )
@@ -296,6 +280,39 @@ describe( `Dashing`, () => {
 			} )
 		} )
 	} )
+	
+	
+	describe( `Using with a generator`, () => {
+	
+	} )
+	
+	describe( `Usage`, () => {
+		
+		
+		xtest( `It comes with faker as default generator`, () => {
+			
+			const created: SomeClass = makeDashing( faker )// not anymore xD
+			// will fail/throw anyway if generator not provided
+				.define( SomeClass, ( faker: FakerStatic ) => [ faker.internet.email() ] )
+				.make()
+			
+			expect( created.param1 ).not.toBe( undefined )
+		} )
+		
+		test( `I can pass my own generator`, () => {
+			
+			
+			const customGenerator = { returnFive: () => 5 }
+			
+			const created: SomeClass = makeDashing( customGenerator )
+				.define( SomeClass, customGenerator => [ customGenerator.returnFive() ] )
+				.make()
+			
+			expect( created.param1 ).toBe( 5 )
+		} )
+	} )
+	
+	
 	
 	describe( `Generating dynamic data`, () => {
 		
@@ -325,7 +342,7 @@ describe( `Dashing`, () => {
 				it( `Should provide the generator to the seed function`, () => {
 					
 					const factory: Builder = makeDashing( GENERATOR )
-						.define( SomeClass, _ => [] )
+						.define( SomeClass, makeSeed() )
 					
 					factory.registerPreset( "withgenerator", generator => [
 						generator.someNumber(),
@@ -344,7 +361,7 @@ describe( `Dashing`, () => {
 				it( `Should provide the generator to the seed function`, () => {
 					
 					const factory: Builder = makeDashing( GENERATOR )
-						.define( SomeClass, _ => [] )
+						.define( SomeClass, makeSeed() )
 					
 					const made: SomeClass = factory
 						.make( generator => [
@@ -365,7 +382,7 @@ describe( `Dashing`, () => {
 					const factory: Builder = makeDashing( GENERATOR )
 						.define(
 							SomeClass,
-							_ => [],
+							makeSeed(),
 							( instance: SomeClass, generator ) =>
 								instance.setStuff( generator.someString() ),
 						)
@@ -381,9 +398,9 @@ describe( `Dashing`, () => {
 				it( `Should provide the generator as second argument`, () => {
 					
 					const factory: Builder = makeDashing( GENERATOR )
-						.define( SomeClass, _ => [] )
+						.define( SomeClass, makeSeed() )
 					
-					factory.registerPreset( "breakfast", _ => [],
+					factory.registerPreset( "breakfast", makeSeed(),
 						( instance: SomeClass, generator ) => {
 							instance.setStuff( generator.someString() )
 						},
@@ -399,3 +416,9 @@ describe( `Dashing`, () => {
 		} )
 	} )
 } )
+
+
+function makeSeed( ...args: Array<any> )
+{
+	return _ => args
+}
