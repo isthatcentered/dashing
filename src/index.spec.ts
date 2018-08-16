@@ -1,6 +1,7 @@
 import { Builder, ModelBuilder } from "./Builder"
 import * as makeDashing from "./index"
 import FakerStatic = Faker.FakerStatic
+import * as faker from "faker"
 
 
 
@@ -52,7 +53,7 @@ describe( `Dashing`, () => {
 		
 		xtest( `It comes with faker as default generator`, () => {
 			
-			const created: SomeClass = makeDashing()
+			const created: SomeClass = makeDashing(faker)// not anymore xD
 			// will fail/throw anyway if generator not provided
 				.define( SomeClass, ( faker: FakerStatic ) => [ faker.internet.email() ] )
 				.make()
