@@ -5,7 +5,6 @@ import { dashingCallback, seed } from "./Dashing"
 import FakerStatic = Faker.FakerStatic
 
 
-
 // used for below tests
 class SomeClass
 {

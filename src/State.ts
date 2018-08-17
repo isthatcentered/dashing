@@ -1,5 +1,4 @@
-// @ts-ignore
-import * as merge from "lodash.merge"
+import { merge } from "lodash"
 import { dashingCallback, seed } from "./Dashing"
 
 
@@ -47,6 +46,7 @@ export class BuildStepCompositeState implements State
 	
 	constructor( ...states: Array<State> )
 	{
+		// console.log( "MEGE::::", merge )
 		this._states = states || new NullState()
 	}
 	
