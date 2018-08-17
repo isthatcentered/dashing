@@ -1,3 +1,4 @@
 .cache
+.idea
 src
 yarn-error.log
