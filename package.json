@@ -4,10 +4,10 @@
     "description": "Generate pre-configured objects from presets like it's nothing. (Model Factories just like in Laravel) ",
     "main": "dist/index.js",
     "scripts": {
-        "parcel": "parcel src/index.ts --target node",
+        "parcel": "parcel src/index.ts",
         "test": "jest --watchAll -b",
         "start": "yarn parcel & yarn test",
-        "build": "parcel build src/index.ts --target node",
+        "build": "parcel build src/index.ts",
         "prerelease": "yarn build",
         "release": "np"
     },
