@@ -14,10 +14,7 @@ $ yarn add dashing --save-dev
 ## How do I use this thing ?
 ### Importing
 ```javascript
-// Import with typescript
-import * as makeDashing from "dashing"
-
-// Import with ES6
+// Import with typescript / ES6
 import makeDashing from "dashing"
 
 // Import with node
@@ -48,7 +45,7 @@ let freshPreConfiguredUserObject = dashing(User)
 ### Defining a model factory
 ```javascript
 // someFile.js
-import * as makeDashing from "dashing"
+import makeDashing from "dashing"
 
 let dashing = makeDashing({}) // will return a unique instance of dashing
 
