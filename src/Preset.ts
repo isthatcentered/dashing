@@ -16,12 +16,6 @@ export class NullPreset implements Preset
 	applyOnCreated = ( instance, generator ) => undefined
 	
 	makeSeed = ( generator ) => []
-	
-	
-	apply( instance, generator )
-	{
-		return new instance()
-	}
 }
 
 export class ModelPreset implements Preset
@@ -42,16 +36,6 @@ export class ModelPreset implements Preset
 	
 	
 	applyOnCreated = ( instance, generator ) => this._onCreated( instance, generator )
-	
-	
-	apply( instance: Function, generator: any ): any
-	{
-		return this.applyOnCreated(
-			new (instance as any)( this.makeSeed( generator ) ),
-			generator,
-		)
-	}
-	
 	
 	private _normalizeParams( parameters: modelParameters ): seed
 	{
