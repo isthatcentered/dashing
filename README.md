@@ -1,6 +1,8 @@
 # Dashing
 Generate pre-configured objects from presets like it's nothing. (Model Factories just like in Laravel)
 
+[![Try it on Code Sandbox](https://codesandbox.io/static/img/play-codesandbox.svg)](https://codesandbox.io/s/209n3k3r1j)
+
 ## How do I install this thing ?
 ```sh
 # Using npm

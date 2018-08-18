@@ -59,6 +59,8 @@
         "auto",
         "generate",
         "states",
+        "presets",
+        "bdd",
         "instance"
     ],
     "repository": {
