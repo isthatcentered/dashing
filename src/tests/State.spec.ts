@@ -1,5 +1,5 @@
-import { BuildStepCompositeState, State } from "./State"
-import { dashingCallback, seed } from "./Dashing"
+import { CompositeModelPreset, Preset } from "../Preset"
+import { dashingCallback, modelParameters } from "../Dashing"
 
 
 
@@ -9,14 +9,14 @@ describe( `CompositeState`, () => {
 	describe( `No states passed on creation`, () => {
 		it( `Should return a blank seed`, () => {
 			
-			const composite = new BuildStepCompositeState()
+			const composite = new CompositeModelPreset()
 			
 			expect( composite.makeSeed( {} ) ).toEqual( [] )
 		} )
 		
 		it( `Should return instance after callback`, () => {
 			
-			const composite = new BuildStepCompositeState()
+			const composite = new CompositeModelPreset()
 			
 			expect( composite.applyOnCreated( "instance", {} ) ).toBe( "instance" )
 		} )
@@ -38,7 +38,7 @@ describe( `CompositeState`, () => {
 				const firstState  = makeState( _ => [ "waffles", "pancakes" ] ),
 				      secondState = makeState( _ => [ undefined, "syrup" ] )
 				
-				const composite = new BuildStepCompositeState( firstState, secondState )
+				const composite = new CompositeModelPreset( firstState, secondState )
 				
 				expect( composite.makeSeed( {} ) ).toEqual( [ "waffles", "syrup" ] )
 			} )
@@ -48,7 +48,7 @@ describe( `CompositeState`, () => {
 				const firstState  = makeState( g => [ g.someString(), "pancakes" ] ),
 				      secondState = makeState( g => [ undefined, g.someNumber() ] )
 				
-				const composite = new BuildStepCompositeState( firstState, secondState )
+				const composite = new CompositeModelPreset( firstState, secondState )
 				
 				expect( composite.makeSeed( GENERATOR ) ).toEqual( [ GENERATOR.someString(), GENERATOR.someNumber() ] )
 			} )
@@ -66,7 +66,7 @@ describe( `CompositeState`, () => {
 					      instance.setBreakfast( "🥞" )
 				      } )
 				
-				const result = new BuildStepCompositeState( firstState, secondState )
+				const result = new CompositeModelPreset( firstState, secondState )
 					.applyOnCreated( instance, {} )
 				
 				expect( instance.setBreakfast ).toHaveBeenCalledTimes( 2 )
@@ -82,7 +82,7 @@ describe( `CompositeState`, () => {
 					instance.setBreakfast( "waffles" )
 				} )
 				
-				const result = new BuildStepCompositeState( state )
+				const result = new CompositeModelPreset( state )
 					.applyOnCreated( instance, {} )
 				
 				expect( result ).toBe( instance )
@@ -93,7 +93,7 @@ describe( `CompositeState`, () => {
 				const firstOncreated = jest.fn().mockImplementation( ( instance, _ ) => "🍩" )
 				const secondOncreated = jest.fn().mockImplementation( ( instance, _ ) => "🥞" )
 				
-				const result = new BuildStepCompositeState( makeState( undefined, firstOncreated ), makeState( undefined, secondOncreated ) )
+				const result = new CompositeModelPreset( makeState( undefined, firstOncreated ), makeState( undefined, secondOncreated ) )
 					.applyOnCreated( "instance", "generator" )
 				
 				expect( firstOncreated ).toHaveBeenCalledWith( "instance", "generator" )
@@ -107,7 +107,7 @@ describe( `CompositeState`, () => {
 				
 				const state = makeState( undefined, ( instance, _ ) => GENERATOR.someString() )
 				
-				const result = new BuildStepCompositeState( state )
+				const result = new CompositeModelPreset( state )
 					.applyOnCreated( {}, GENERATOR )
 				
 				expect( result ).toBe( GENERATOR.someString() )
@@ -117,7 +117,7 @@ describe( `CompositeState`, () => {
 } )
 
 
-function makeState( seed?: seed, callback?: dashingCallback ): State
+function makeState( seed?: any, callback?: dashingCallback ): Preset
 {
 	return {
 		applyOnCreated: callback || (( i, g ) => undefined),

@@ -2,12 +2,11 @@ import { Builder, ModelBuilder } from "./Builder"
 
 
 
-
 type simpleSeed = Array<any>
 
-type dynamicSeed = ( generator: any ) => simpleSeed
+export type seed = ( generator: any ) => simpleSeed
 
-export type seed = simpleSeed | dynamicSeed
+export type modelParameters = simpleSeed | seed
 
 export type dashingCallback = ( instance: any, generator: any ) => any | void
 
@@ -15,7 +14,7 @@ export interface Dashing
 {
 	( model: Function ): Builder
 	
-	define: ( model: Function, seed: seed, onCreatedCallback?: dashingCallback ) => Builder;
+	define: ( model: Function, seed: modelParameters, onCreatedCallback?: dashingCallback ) => Builder;
 }
 
 export interface dashingFactory

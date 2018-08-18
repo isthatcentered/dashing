@@ -1,7 +1,7 @@
-import { Builder, ModelBuilder } from "./Builder"
-import * as makeDashing from "./index"
+import { Builder, ModelBuilder } from "../Builder"
+import * as makeDashing from "../index"
 import * as faker from "faker"
-import { dashingCallback, seed } from "./Dashing"
+import { dashingCallback, modelParameters } from "../Dashing"
 import FakerStatic = Faker.FakerStatic
 
 
@@ -401,14 +401,14 @@ describe( `Dashing`, () => {
 } )
 
 
-function makeTestFactory( seed: seed = asSeed(), callback?: dashingCallback ): Builder
+function makeTestFactory( seed: modelParameters = asSeed(), callback?: dashingCallback ): Builder
 {
 	return makeDashing( {} )
 		.define( SomeClass, seed, callback )
 }
 
 
-function asSeed( ...args: Array<any> ): seed
+function asSeed( ...args: Array<any> ): modelParameters
 {
 	return args
 }

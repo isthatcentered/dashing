@@ -1,4 +1,4 @@
-import { State } from "./State"
+import { Preset } from "./Preset"
 
 
 
@@ -16,15 +16,15 @@ export interface BuildConfig<T>
 	getTimes: () => number
 }
 
-export class ModelBuilderBuildConfig implements BuildConfig<State>
+export class ModelBuilderBuildConfig implements BuildConfig<Preset>
 {
 	
-	private _default: State
-	private _steps: Array<State> = []
+	private _default: Preset
+	private _steps: Array<Preset> = []
 	private _times: number = 1
 	
 	
-	constructor( defaultState: State )
+	constructor( defaultState: Preset )
 	{
 		
 		if ( !defaultState )

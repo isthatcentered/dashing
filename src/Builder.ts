@@ -1,19 +1,19 @@
-import { BuildStepCompositeState, BuildStepState, NullState, State } from "./State"
+import { CompositeModelPreset, ModelPreset, NullPreset, Preset } from "./Preset"
 import { BuildConfig, ModelBuilderBuildConfig } from "./BuildConfig"
-import { dashingCallback, seed } from "./Dashing"
+import { dashingCallback, modelParameters } from "./Dashing"
 
 
 
 
 export interface Builder
 {
-	registerPreset( stateName: string, seed: seed, onCreated?: dashingCallback ): this
+	registerPreset( stateName: string, seed: modelParameters, onCreated?: dashingCallback ): this
 	
 	preset( ...states: Array<string> ): this
 	
 	times( times: number ): this
 	
-	make( overrides?: seed ): any
+	make( overrides?: modelParameters ): any
 	
 	reset(): void
 }
@@ -23,15 +23,15 @@ export class ModelBuilder implements Builder
 	
 	private _generator: any
 	private _model: Function
-	private _defaultState: State
-	private _states: Map<string, State> = new Map()
+	private _defaultState: Preset
+	private _states: Map<string, Preset> = new Map()
 	
-	private _buildConfig!: BuildConfig<State>
+	private _buildConfig!: BuildConfig<Preset>
 	
 	
-	constructor( generator: any, model: Function, seed: seed, onCreated?: dashingCallback )
+	constructor( generator: any, model: Function, seed: modelParameters, onCreated?: dashingCallback )
 	{
-		this._defaultState = new BuildStepState( this._normalizeSeed( seed ), onCreated )
+		this._defaultState = new ModelPreset( this._normalizeSeed( seed ), onCreated )
 		
 		this._buildConfig = new ModelBuilderBuildConfig( this._defaultState )
 		
@@ -43,9 +43,9 @@ export class ModelBuilder implements Builder
 	}
 	
 	
-	make( overrides: seed = _ => [] ): any
+	make( overrides: modelParameters = _ => [] ): any
 	{
-		this._activateStateForBuild( new BuildStepState( this._normalizeSeed( overrides ) ) )
+		this._activateStateForBuild( new ModelPreset( this._normalizeSeed( overrides ) ) )
 		
 		let made: any[] = []
 		
@@ -62,9 +62,9 @@ export class ModelBuilder implements Builder
 	}
 	
 	
-	registerPreset( stateName: string, seed: seed, onCreated?: dashingCallback ): this
+	registerPreset( stateName: string, seed: modelParameters, onCreated?: dashingCallback ): this
 	{
-		this._states.set( stateName, new BuildStepState( this._normalizeSeed( seed ), onCreated ) )
+		this._states.set( stateName, new ModelPreset( this._normalizeSeed( seed ), onCreated ) )
 		
 		return this
 	}
@@ -78,7 +78,7 @@ export class ModelBuilder implements Builder
 				throw new Error( `No state registered under name ${stateName}` )
 			
 			// nullstate is just for ts, we make sure abov that it exists
-			return this._activateStateForBuild( this._states.get( stateName ) || (new NullState()) )
+			return this._activateStateForBuild( this._states.get( stateName ) || (new NullPreset()) )
 		} )
 		
 		return this
@@ -101,21 +101,21 @@ export class ModelBuilder implements Builder
 	
 	private _make()
 	{
-		const state = new BuildStepCompositeState( ...this._buildConfig.getSteps() )
+		const preset = new CompositeModelPreset( ...this._buildConfig.getSteps() )
 		
-		let instance = new (this._model as any)( ...state.makeSeed( this._generator ) )
+		let instance = new (this._model as any)( ...preset.makeSeed( this._generator ) )
 		
-		return state.applyOnCreated( instance, this._generator )
+		return preset.applyOnCreated( instance, this._generator )
 	}
 	
 	
-	private _activateStateForBuild( state: State ): void
+	private _activateStateForBuild( state: Preset ): void
 	{
 		this._buildConfig.addStep( state )
 	}
 	
 	
-	private _normalizeSeed( seed: any ): seed
+	private _normalizeSeed( seed: any ): modelParameters
 	{
 		return typeof seed !== "function" ?
 		       g => seed :

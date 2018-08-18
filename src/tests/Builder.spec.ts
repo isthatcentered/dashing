@@ -1,5 +1,5 @@
 
-import { ModelBuilder } from "./Builder"
+import { ModelBuilder } from "../Builder"
 
 
 

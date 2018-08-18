@@ -1,4 +1,4 @@
-import { ModelBuilderBuildConfig } from "./BuildConfig"
+import { ModelBuilderBuildConfig } from "../BuildConfig"
 
 
 
